@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 class TravelLocationsViewController: UIViewController {
-
+  
   // MARK: Properties
   var annotations = [MKPointAnnotation]()
   
@@ -18,6 +18,26 @@ class TravelLocationsViewController: UIViewController {
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
+  
+  // MARK: Actions
+  
+  @IBAction func handleLongPress(_ sender: UILongPressGestureRecognizer) {
+    
+    switch sender.state {
+    case .began:
+      addPin(at: sender.location(in: mapView))
+      // refactor to setup pin and draggable
+      break
+    case .changed:
+      // have pin track user touch location
+      break
+    case .ended:
+      // drop pin at last touchpoint
+      break
+    default:
+      break
+    }
+  }
   
   
   // MARK: Lifecycle
@@ -44,7 +64,7 @@ class TravelLocationsViewController: UIViewController {
     mapView.delegate = self
     
   }
-
+  
   
   // MARK: Helper Methods
   
@@ -55,6 +75,7 @@ class TravelLocationsViewController: UIViewController {
   }
   
   func saveMapViewRegion(_ region: MKCoordinateRegion) {
+    
     UserDefaults.standard.set([
       "latitude": region.center.latitude,
       "longitude": region.center.longitude,
@@ -62,6 +83,17 @@ class TravelLocationsViewController: UIViewController {
       "longitudeDelta": region.span.longitudeDelta
       ], forKey: AppDelegate.UserDefaultKeys.MapViewRegion)
   }
+  
+  
+  func addPin(at touchPoint: CGPoint) {
+    
+    let mapCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+    let annotation = MKPointAnnotation()
+    annotation.coordinate = mapCoordinate
+    
+    mapView.addAnnotation(annotation)
+  }
+  
 }
 
 // MARK: - TravelLocationsViewController: MKMapViewDelegate
