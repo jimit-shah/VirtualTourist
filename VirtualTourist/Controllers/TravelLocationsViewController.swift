@@ -9,15 +9,21 @@
 import UIKit
 import MapKit
 
+// MARK: - TravelLocationsViewController: UIViewController
+
 class TravelLocationsViewController: UIViewController {
   
   // MARK: Properties
+  
   var annotations = [MKPointAnnotation]()
+
+  var feedbackGenerator: UIImpactFeedbackGenerator? = nil
   
   
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
+  
   
   // MARK: Actions
   
@@ -25,7 +31,15 @@ class TravelLocationsViewController: UIViewController {
     
     switch sender.state {
     case .began:
+      
+      // Instantiate a feedback generator.
+      feedbackGenerator = UIImpactFeedbackGenerator(style: .heavy)
+      
+      // Prepare the generator when the gesture begins.
+      feedbackGenerator?.prepare()
+      
       addPin(at: sender.location(in: mapView))
+      
       // refactor to setup pin and draggable
       break
     case .changed:
@@ -37,6 +51,7 @@ class TravelLocationsViewController: UIViewController {
     default:
       break
     }
+    
   }
   
   
@@ -62,7 +77,6 @@ class TravelLocationsViewController: UIViewController {
     mapView.setRegion(region, animated: false)
     mapView.setCenter(region.center, animated: true)
     mapView.delegate = self
-    
   }
   
   
@@ -92,6 +106,10 @@ class TravelLocationsViewController: UIViewController {
     annotation.coordinate = mapCoordinate
     
     mapView.addAnnotation(annotation)
+    mapView.selectAnnotation(annotation, animated: true)
+    
+    // generate heptic feedback
+    feedbackGenerator?.impactOccurred()
   }
   
 }
@@ -99,9 +117,11 @@ class TravelLocationsViewController: UIViewController {
 // MARK: - TravelLocationsViewController: MKMapViewDelegate
 
 extension TravelLocationsViewController: MKMapViewDelegate {
+  
   func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+  
     saveMapViewRegion(mapView.region)
-    
+  
   }
 }
 
