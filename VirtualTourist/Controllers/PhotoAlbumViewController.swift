@@ -7,12 +7,20 @@
 //
 
 import UIKit
+import MapKit
 
 class PhotoAlbumViewController: UIViewController {
 
+  // MARK: Properties
+  var selectedAnnotation: MKAnnotation? {
+    didSet {
+      
+    }
+  }
+  
     override func viewDidLoad() {
         super.viewDidLoad()
-
+      print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
     }
 
   

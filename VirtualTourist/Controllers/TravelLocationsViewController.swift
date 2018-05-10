@@ -106,7 +106,7 @@ class TravelLocationsViewController: UIViewController {
     annotation.coordinate = mapCoordinate
     
     mapView.addAnnotation(annotation)
-    mapView.selectAnnotation(annotation, animated: true)
+    //mapView.selectAnnotation(annotation, animated: true)
     
     // generate heptic feedback
     feedbackGenerator?.impactOccurred()
@@ -119,9 +119,40 @@ class TravelLocationsViewController: UIViewController {
 extension TravelLocationsViewController: MKMapViewDelegate {
   
   func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-  
+    
     saveMapViewRegion(mapView.region)
-  
+    
   }
+  
+  func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+    
+    view.setSelected(false, animated: true)
+    
+    let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumVC") as! PhotoAlbumViewController
+    vc.selectedAnnotation = view.annotation
+    
+    navigationController!.pushViewController(vc, animated: true)
+    
+    // deselect annotation
+    mapView.deselectAnnotation(view.annotation, animated: true)
+    
+  }
+  
+  func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+    var annotationView: MKAnnotationView
+    
+    if #available(iOS 11.0, *) {
+      annotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: nil)
+    } else {
+      annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
+    }
+    
+    annotationView.isDraggable = true
+    annotationView.canShowCallout = true
+    return annotationView
+    
+  }
+  
 }
+
 
