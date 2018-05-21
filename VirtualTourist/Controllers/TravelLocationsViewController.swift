@@ -129,7 +129,8 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     view.setSelected(false, animated: true)
     
     let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumVC") as! PhotoAlbumViewController
-    vc.selectedAnnotation = view.annotation
+    print("passing annotation: \(view.annotation!.coordinate)")
+    vc.selectedAnnotation = view.annotation as? PinAnnotation
     
     navigationController!.pushViewController(vc, animated: true)
     

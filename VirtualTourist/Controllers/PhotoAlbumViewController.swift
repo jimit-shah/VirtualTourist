@@ -10,21 +10,46 @@ import UIKit
 import MapKit
 
 class PhotoAlbumViewController: UIViewController {
-
-  // MARK: Properties
-  var selectedAnnotation: MKAnnotation?
   
-    override func viewDidLoad() {
-        super.viewDidLoad()
+  // MARK: Properties
+  
+  var selectedAnnotation: PinAnnotation? {
+    didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
-      
-      // get photos from flickr
-      getPhotos()
     }
-
+  }
+  var photos = [UIImage]()
+  
+  // MARK: Outlets
+  
+  @IBOutlet weak var mapView: MKMapView!
+  @IBOutlet weak var collectionView: UICollectionView!
+  
+  // MARK: Actions
+  
+  @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
+    
+  }
+  
+  // MARK: Lifecycle
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    collectionView.dataSource = self
+    collectionView.delegate = self
+    
+    
+    // get photos from flickr
+    getPhotos()
+  }
+  
+  // MARK: Helper Methods
+  
   func generateRandomNumber(_ upper: Int, _ lower: Int = 0) -> Int {
     return Int(arc4random_uniform(UInt32(upper - lower + 1))) + lower
   }
+  
+  // MARK: Get Photos Method
   
   func getPhotos() {
     var lat: Double!
@@ -61,15 +86,50 @@ class PhotoAlbumViewController: UIViewController {
           print("Cannot find photo list in Photos.")
           return
         }
-
+        
         for result in photoResults {
           let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
-          //let photo = URL(string: imageURLString)
+          let imageURL = URL(string: imageURLString)
           print("Photo URL: ---- \(imageURLString)")
-        }
           
+          let imageData = try? Data(contentsOf: imageURL!)
+          
+          if let photo = UIImage(data: imageData!) {
+            self.photos.append(photo)
+          }
+        }
+        
+        // assign all photos to pin
+        self.selectedAnnotation?.pin.photos = self.photos
+        
       }
+      
     }
   }
   
+}
+
+// MARK: CollectionView Data Source Methods
+
+extension PhotoAlbumViewController: UICollectionViewDataSource {
+  
+  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    return photos.count
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    let photo = photos[indexPath.item]
+    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
+    cell.photoImageView.image = photo
+    return cell
+  }
+  
+}
+
+// MARK: CollectionView Delegate Methods
+
+extension PhotoAlbumViewController: UICollectionViewDelegate {
+  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    collectionView.deselectItem(at: indexPath, animated: true)
+  }
 }
