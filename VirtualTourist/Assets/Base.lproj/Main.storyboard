@@ -85,9 +85,9 @@
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="uTn-Ki-ric">
                                 <rect key="frame" x="0.0" y="220" width="375" height="447"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="YR5-UG-ZOF">
-                                    <size key="itemSize" width="110" height="110"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="YR5-UG-ZOF">
+                                    <size key="itemSize" width="100" height="100"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -100,21 +100,25 @@
                                             <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Sbk-Rb-5cm">
-                                                    <rect key="frame" x="4.5" y="5" width="100" height="100"/>
-                                                    <constraints>
-                                                        <constraint firstAttribute="height" constant="100" id="DMi-Yc-8xh"/>
-                                                        <constraint firstAttribute="width" constant="100" id="oet-jw-J2a"/>
-                                                    </constraints>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Sbk-Rb-5cm">
+                                                    <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                                 </imageView>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
+                                                    <rect key="frame" x="37" y="37" width="37" height="37"/>
+                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
                                         <constraints>
-                                            <constraint firstItem="Sbk-Rb-5cm" firstAttribute="centerX" secondItem="wOR-Me-KxC" secondAttribute="centerX" id="Bjl-XO-kCW"/>
-                                            <constraint firstItem="Sbk-Rb-5cm" firstAttribute="centerY" secondItem="wOR-Me-KxC" secondAttribute="centerY" id="NN3-Jj-7ar"/>
+                                            <constraint firstItem="zj4-qb-edX" firstAttribute="centerY" secondItem="wOR-Me-KxC" secondAttribute="centerY" id="FIa-m8-typ"/>
+                                            <constraint firstItem="Sbk-Rb-5cm" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="TvK-0o-mJU"/>
+                                            <constraint firstItem="zj4-qb-edX" firstAttribute="centerX" secondItem="wOR-Me-KxC" secondAttribute="centerX" id="bSc-6h-DMa"/>
+                                            <constraint firstAttribute="bottom" secondItem="Sbk-Rb-5cm" secondAttribute="bottom" id="bhA-gM-Xk6"/>
+                                            <constraint firstItem="Sbk-Rb-5cm" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="cyO-DZ-Jks"/>
+                                            <constraint firstAttribute="trailing" secondItem="Sbk-Rb-5cm" secondAttribute="trailing" id="l6P-Ye-dls"/>
                                         </constraints>
                                         <size key="customSize" width="110" height="110"/>
                                         <connections>
+                                            <outlet property="activityIndicator" destination="zj4-qb-edX" id="nfI-CT-oHq"/>
                                             <outlet property="photoImageView" destination="Sbk-Rb-5cm" id="MN8-He-DJe"/>
                                         </connections>
                                     </collectionViewCell>
@@ -148,6 +152,7 @@
                     </view>
                     <connections>
                         <outlet property="collectionView" destination="uTn-Ki-ric" id="KGC-Km-gwI"/>
+                        <outlet property="flowLayout" destination="YR5-UG-ZOF" id="pE0-hf-Nn7"/>
                         <outlet property="mapView" destination="Cmc-yj-NxU" id="8bX-Ik-sNW"/>
                     </connections>
                 </viewController>

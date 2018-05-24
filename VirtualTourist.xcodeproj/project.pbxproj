@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF408E9620B65CEF00FCA1EF /* GCDBlackBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */; };
 		EF71BE9F20B25268008268C7 /* PinAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF71BE9E20B25268008268C7 /* PinAnnotation.swift */; };
 		EF71BEA120B252FD008268C7 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF71BEA020B252FD008268C7 /* Pin.swift */; };
 		EFB873F320A4BC870083C805 /* FlickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB873F220A4BC870083C805 /* FlickrClient.swift */; };
@@ -22,6 +23,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GCDBlackBox.swift; sourceTree = "<group>"; };
 		EF71BE9E20B25268008268C7 /* PinAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinAnnotation.swift; sourceTree = "<group>"; };
 		EF71BEA020B252FD008268C7 /* Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		EFB873F220A4BC870083C805 /* FlickrClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrClient.swift; sourceTree = "<group>"; };
@@ -49,6 +51,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EF408E9720B65D6300FCA1EF /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				EFD43A531FD2500F00B444C7 /* Info.plist */,
+				EFD43A471FD2500F00B444C7 /* AppDelegate.swift */,
+				EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */,
+			);
+			path = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		EFA9711C1FE347B100BC7285 /* Clients */ = {
 			isa = PBXGroup;
 			children = (
@@ -78,8 +90,7 @@
 		EFD43A461FD2500F00B444C7 /* VirtualTourist */ = {
 			isa = PBXGroup;
 			children = (
-				EFD43A531FD2500F00B444C7 /* Info.plist */,
-				EFD43A471FD2500F00B444C7 /* AppDelegate.swift */,
+				EF408E9720B65D6300FCA1EF /* Supporting Files */,
 				EFD43A5A1FD271C600B444C7 /* Models */,
 				EFD43A5B1FD271CD00B444C7 /* Controllers */,
 				EFD43A591FD271AF00B444C7 /* Views */,
@@ -201,6 +212,7 @@
 				EFB873F520B10B380083C805 /* FlickrConstants.swift in Sources */,
 				EFB873F720B15FDF0083C805 /* FlickrConvenience.swift in Sources */,
 				EF71BEA120B252FD008268C7 /* Pin.swift in Sources */,
+				EF408E9620B65CEF00FCA1EF /* GCDBlackBox.swift in Sources */,
 				EFD43A481FD2500F00B444C7 /* AppDelegate.swift in Sources */,
 				EFC6C1CD20B2A5B000D80879 /* PhotoCollectionViewCell.swift in Sources */,
 				EFD43A5F1FD272D300B444C7 /* PhotoAlbumViewController.swift in Sources */,
@@ -348,7 +360,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = R98NQ2F62J;
-				INFOPLIST_FILE = VirtualTourist/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/VirtualTourist/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jimitshah.VirtualTourist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -363,7 +375,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = R98NQ2F62J;
-				INFOPLIST_FILE = VirtualTourist/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/VirtualTourist/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.jimitshah.VirtualTourist;
 				PRODUCT_NAME = "$(TARGET_NAME)";

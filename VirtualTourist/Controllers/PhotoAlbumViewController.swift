@@ -11,19 +11,26 @@ import MapKit
 
 class PhotoAlbumViewController: UIViewController {
   
+  
   // MARK: Properties
   
-  var selectedAnnotation: PinAnnotation? {
+  var photos = [Data]()
+  let regionRadius: CLLocationDistance = 1000
+  var selectedAnnotation: MKAnnotation? {
     didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
     }
   }
-  var photos = [UIImage]()
+  
+  let inset: CGFloat = 8.0
+  let spacing: CGFloat = 8.0
+  let lineSpacing: CGFloat = 8.0
   
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
   @IBOutlet weak var collectionView: UICollectionView!
+  @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
   
   // MARK: Actions
   
@@ -38,12 +45,21 @@ class PhotoAlbumViewController: UIViewController {
     collectionView.dataSource = self
     collectionView.delegate = self
     
+    // load annotation on map and set region
+    mapView.addAnnotation(selectedAnnotation!)
+    centerMapOnLocation(annotation: selectedAnnotation!)
     
     // get photos from flickr
     getPhotos()
   }
   
   // MARK: Helper Methods
+  
+  
+  func centerMapOnLocation(annotation: MKAnnotation) {
+    let coordinateRegion = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
+    mapView.setRegion(coordinateRegion, animated: true)
+  }
   
   func generateRandomNumber(_ upper: Int, _ lower: Int = 0) -> Int {
     return Int(arc4random_uniform(UInt32(upper - lower + 1))) + lower
@@ -93,15 +109,15 @@ class PhotoAlbumViewController: UIViewController {
           print("Photo URL: ---- \(imageURLString)")
           
           let imageData = try? Data(contentsOf: imageURL!)
-          
-          if let photo = UIImage(data: imageData!) {
-            self.photos.append(photo)
+          if let data = imageData {
+            self.photos.append(data)
           }
+         
         }
         
-        // assign all photos to pin
-        self.selectedAnnotation?.pin.photos = self.photos
-        
+        performUIUpdatesOnMain {
+          self.collectionView.reloadData()
+        }
       }
       
     }
@@ -118,13 +134,36 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    let photo = photos[indexPath.item]
+    //let photo = photos[indexPath.item]
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
-    cell.photoImageView.image = photo
+    
+    
+    configurePhotoCell(cell, cellForItemAt: indexPath)
+    //cell.photoImageView.image = photo
+    
     return cell
   }
   
+  // MARK: Configure Cell
+  
+  func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
+    
+    let imageData = photos[indexPath.row]
+    
+    cell.toggleSpinner(true)
+    
+    let image = UIImage(data: imageData)
+    
+    performUIUpdatesOnMain {
+      cell.photoImageView.image = image
+      cell.toggleSpinner(false)
+    }
+    
+  }
+  
 }
+
+
 
 // MARK: CollectionView Delegate Methods
 
@@ -132,4 +171,31 @@ extension PhotoAlbumViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     collectionView.deselectItem(at: indexPath, animated: true)
   }
+}
+
+
+// MARK: - UICollectionViewDelegateFlowLayout
+
+extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    
+    let columns: CGFloat = collectionView.frame.width > collectionView.frame.height ? 5.0 : 3.0
+    
+    let dimension = Int((collectionView.frame.width / columns) - (inset + spacing))
+    
+    return CGSize(width: dimension, height: dimension)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+    return UIEdgeInsets(top: inset, left: inset, bottom: inset, right: inset)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    return spacing
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    return lineSpacing
+  }
+  
 }

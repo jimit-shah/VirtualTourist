@@ -37,17 +37,17 @@ class TravelLocationsViewController: UIViewController {
       
       // Prepare the generator when the gesture begins.
       feedbackGenerator?.prepare()
-      
       addPin(at: sender.location(in: mapView))
-      
       // refactor to setup pin and draggable
-      break
+      
     case .changed:
       // have pin track user touch location
       break
+    
     case .ended:
       // drop pin at last touchpoint
       break
+    
     default:
       break
     }
@@ -98,7 +98,7 @@ class TravelLocationsViewController: UIViewController {
       ], forKey: AppDelegate.UserDefaultKeys.MapViewRegion)
   }
   
-  
+  // MARK: Method to add Pin
   func addPin(at touchPoint: CGPoint) {
     
     let mapCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
@@ -106,7 +106,6 @@ class TravelLocationsViewController: UIViewController {
     annotation.coordinate = mapCoordinate
     
     mapView.addAnnotation(annotation)
-    //mapView.selectAnnotation(annotation, animated: true)
     
     // generate heptic feedback
     feedbackGenerator?.impactOccurred()
@@ -130,13 +129,12 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     
     let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumVC") as! PhotoAlbumViewController
     print("passing annotation: \(view.annotation!.coordinate)")
-    vc.selectedAnnotation = view.annotation as? PinAnnotation
+    vc.selectedAnnotation = view.annotation
     
     navigationController!.pushViewController(vc, animated: true)
     
     // deselect annotation
     mapView.deselectAnnotation(view.annotation, animated: true)
-    
   }
   
   func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -149,7 +147,7 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     }
     
     annotationView.isDraggable = true
-    annotationView.canShowCallout = true
+    //annotationView.canShowCallout = true
     return annotationView
     
   }
