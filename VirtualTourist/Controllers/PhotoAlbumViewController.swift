@@ -14,17 +14,17 @@ class PhotoAlbumViewController: UIViewController {
   
   // MARK: Properties
   
-  var photos = [Data]()
-  let regionRadius: CLLocationDistance = 1000
+  var photos = [String]()
+  let regionRadius: CLLocationDistance = 10000
   var selectedAnnotation: MKAnnotation? {
     didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
     }
   }
   
-  let inset: CGFloat = 8.0
-  let spacing: CGFloat = 8.0
-  let lineSpacing: CGFloat = 8.0
+  let inset: CGFloat = 4.0
+  let spacing: CGFloat = 2.0
+  let lineSpacing: CGFloat = 4.0
   
   // MARK: Outlets
   
@@ -105,14 +105,8 @@ class PhotoAlbumViewController: UIViewController {
         
         for result in photoResults {
           let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
-          let imageURL = URL(string: imageURLString)
-          print("Photo URL: ---- \(imageURLString)")
+          self.photos.append(imageURLString)
           
-          let imageData = try? Data(contentsOf: imageURL!)
-          if let data = imageData {
-            self.photos.append(data)
-          }
-         
         }
         
         performUIUpdatesOnMain {
@@ -134,12 +128,10 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    //let photo = photos[indexPath.item]
+    
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
     
-    
     configurePhotoCell(cell, cellForItemAt: indexPath)
-    //cell.photoImageView.image = photo
     
     return cell
   }
@@ -148,14 +140,17 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    let imageData = photos[indexPath.row]
-    
+    cell.photoImageView.image = nil
     cell.toggleSpinner(true)
     
-    let image = UIImage(data: imageData)
+    let photoLink = photos[indexPath.row]
+    
+    cell.photoImageView.downloadedFrom(link: photoLink)
+    cell.photoImageView.contentMode = .scaleAspectFill
+    cell.photoImageView.clipsToBounds = true
+    
     
     performUIUpdatesOnMain {
-      cell.photoImageView.image = image
       cell.toggleSpinner(false)
     }
     
@@ -179,7 +174,7 @@ extension PhotoAlbumViewController: UICollectionViewDelegate {
 extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     
-    let columns: CGFloat = collectionView.frame.width > collectionView.frame.height ? 5.0 : 3.0
+    let columns: CGFloat = collectionView.frame.width > collectionView.frame.height ? 4.0 : 3.0
     
     let dimension = Int((collectionView.frame.width / columns) - (inset + spacing))
     

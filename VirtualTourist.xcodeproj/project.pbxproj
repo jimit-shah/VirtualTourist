@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		EF408E9620B65CEF00FCA1EF /* GCDBlackBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */; };
+		EF408E9920B7BBC700FCA1EF /* utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF408E9820B7BBC700FCA1EF /* utilities.swift */; };
 		EF71BE9F20B25268008268C7 /* PinAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF71BE9E20B25268008268C7 /* PinAnnotation.swift */; };
 		EF71BEA120B252FD008268C7 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF71BEA020B252FD008268C7 /* Pin.swift */; };
 		EFB873F320A4BC870083C805 /* FlickrClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB873F220A4BC870083C805 /* FlickrClient.swift */; };
@@ -24,6 +25,7 @@
 
 /* Begin PBXFileReference section */
 		EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GCDBlackBox.swift; sourceTree = "<group>"; };
+		EF408E9820B7BBC700FCA1EF /* utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = utilities.swift; sourceTree = "<group>"; };
 		EF71BE9E20B25268008268C7 /* PinAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinAnnotation.swift; sourceTree = "<group>"; };
 		EF71BEA020B252FD008268C7 /* Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		EFB873F220A4BC870083C805 /* FlickrClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrClient.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 				EFD43A531FD2500F00B444C7 /* Info.plist */,
 				EFD43A471FD2500F00B444C7 /* AppDelegate.swift */,
 				EF408E9520B65CEF00FCA1EF /* GCDBlackBox.swift */,
+				EF408E9820B7BBC700FCA1EF /* utilities.swift */,
 			);
 			path = "Supporting Files";
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				EFB873F720B15FDF0083C805 /* FlickrConvenience.swift in Sources */,
 				EF71BEA120B252FD008268C7 /* Pin.swift in Sources */,
 				EF408E9620B65CEF00FCA1EF /* GCDBlackBox.swift in Sources */,
+				EF408E9920B7BBC700FCA1EF /* utilities.swift in Sources */,
 				EFD43A481FD2500F00B444C7 /* AppDelegate.swift in Sources */,
 				EFC6C1CD20B2A5B000D80879 /* PhotoCollectionViewCell.swift in Sources */,
 				EFD43A5F1FD272D300B444C7 /* PhotoAlbumViewController.swift in Sources */,

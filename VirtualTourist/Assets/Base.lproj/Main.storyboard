@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -77,14 +78,11 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Cmc-yj-NxU">
-                                <rect key="frame" x="0.0" y="20" width="375" height="200"/>
+                                <rect key="frame" x="4" y="20" width="367" height="167"/>
                                 <color key="backgroundColor" white="0.79994991090000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="200" id="ZR0-U6-HFY"/>
-                                </constraints>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="uTn-Ki-ric">
-                                <rect key="frame" x="0.0" y="220" width="375" height="447"/>
+                                <rect key="frame" x="0.0" y="187" width="375" height="480"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="YR5-UG-ZOF">
                                     <size key="itemSize" width="100" height="100"/>
@@ -102,9 +100,11 @@
                                             <subviews>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Sbk-Rb-5cm">
                                                     <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
+                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </imageView>
                                                 <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
                                                     <rect key="frame" x="37" y="37" width="37" height="37"/>
+                                                    <color key="color" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </activityIndicatorView>
                                             </subviews>
                                         </view>
@@ -141,12 +141,13 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="uTn-Ki-ric" firstAttribute="bottom" secondItem="b1a-e7-svC" secondAttribute="bottom" id="2LY-uD-8zc"/>
+                            <constraint firstItem="b1a-e7-svC" firstAttribute="trailing" secondItem="Cmc-yj-NxU" secondAttribute="trailing" constant="4" id="65k-Z3-hUy"/>
+                            <constraint firstItem="Cmc-yj-NxU" firstAttribute="height" secondItem="3vp-h7-APX" secondAttribute="height" multiplier="0.25" id="GIg-a3-DWC"/>
                             <constraint firstItem="Cmc-yj-NxU" firstAttribute="top" secondItem="b1a-e7-svC" secondAttribute="top" id="RFz-07-S6U"/>
-                            <constraint firstItem="Cmc-yj-NxU" firstAttribute="trailing" secondItem="b1a-e7-svC" secondAttribute="trailing" id="b3q-VS-SUQ"/>
                             <constraint firstItem="uTn-Ki-ric" firstAttribute="leading" secondItem="b1a-e7-svC" secondAttribute="leading" id="bYK-Cm-lKd"/>
                             <constraint firstItem="uTn-Ki-ric" firstAttribute="top" secondItem="Cmc-yj-NxU" secondAttribute="bottom" id="dfC-cQ-HHM"/>
                             <constraint firstItem="uTn-Ki-ric" firstAttribute="trailing" secondItem="b1a-e7-svC" secondAttribute="trailing" id="p1z-Ef-PIn"/>
-                            <constraint firstItem="Cmc-yj-NxU" firstAttribute="leading" secondItem="b1a-e7-svC" secondAttribute="leading" id="woB-jJ-gN1"/>
+                            <constraint firstItem="Cmc-yj-NxU" firstAttribute="leading" secondItem="b1a-e7-svC" secondAttribute="leading" constant="4" id="woB-jJ-gN1"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="b1a-e7-svC"/>
                     </view>
