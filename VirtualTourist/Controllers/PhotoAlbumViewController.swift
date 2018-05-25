@@ -148,6 +148,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     cell.photoImageView.downloadedFrom(link: photoLink)
     cell.photoImageView.contentMode = .scaleAspectFill
     cell.photoImageView.clipsToBounds = true
+    cell.photoImageView.layer.cornerRadius = 2
     
     
     performUIUpdatesOnMain {
