@@ -14,6 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   var window: UIWindow?
 
+  let dataController = DataController(modelName: "VirtualTourist")
   struct UserDefaultKeys {
     static let HasLaunchedBefore = "hasLaunchedBefore"
     static let MapViewRegion = "mapViewRegion"
@@ -21,6 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
     checkIfFirstLaunch()
+    
+    // load data from coreData
+    dataController.load()
     return true
   }
 
