@@ -25,6 +25,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     // load data from coreData
     dataController.load()
+    
+    let navigatonController = window?.rootViewController as! UINavigationController
+    let travelLocationVC = navigatonController.topViewController as! TravelLocationsViewController
+    travelLocationVC.dataController = dataController
+    
     return true
   }
 

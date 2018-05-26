@@ -8,6 +8,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 // MARK: - TravelLocationsViewController: UIViewController
 
@@ -16,9 +17,12 @@ class TravelLocationsViewController: UIViewController {
   // MARK: Properties
   
   var annotations = [MKPointAnnotation]()
-
+  
+  var pins = [Pin]()
+  
   var feedbackGenerator: UIImpactFeedbackGenerator? = nil
   
+  var dataController: DataController!
   
   // MARK: Outlets
   
@@ -77,6 +81,22 @@ class TravelLocationsViewController: UIViewController {
     mapView.setRegion(region, animated: false)
     mapView.setCenter(region.center, animated: true)
     mapView.delegate = self
+    
+    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+    fetchRequest.sortDescriptors = []
+    
+    if let result = try? dataController.viewContext.fetch(fetchRequest) {
+      pins = result
+      
+      for pin in pins {
+        let annotation = MKPointAnnotation()
+        let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
+        annotation.coordinate = coordinate
+        annotations.append(annotation)
+        mapView.addAnnotation(annotation)
+      }
+    
+    }
   }
   
   
@@ -102,11 +122,23 @@ class TravelLocationsViewController: UIViewController {
   func addPin(at touchPoint: CGPoint) {
     
     let mapCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+    
+    // save coordinates to data controller
+    
+    //let pin = Pin(lat: mapCoordinate.latitude, lon: mapCoordinate.longitude, context: self.sharedMainContext)
+    let pin = Pin(context: dataController.viewContext)
+    pin.latitude = mapCoordinate.latitude as NSNumber
+    pin.longitude = mapCoordinate.longitude as NSNumber
+    
+    try? dataController.viewContext.save()
+    pins.insert(pin, at: 0)
+    
+    // add pin to mapView
+    
     let annotation = MKPointAnnotation()
     annotation.coordinate = mapCoordinate
-    
     mapView.addAnnotation(annotation)
-    
+  
     // generate heptic feedback
     feedbackGenerator?.impactOccurred()
   }

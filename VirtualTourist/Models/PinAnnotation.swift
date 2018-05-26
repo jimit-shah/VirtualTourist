@@ -14,13 +14,13 @@ class PinAnnotation: NSObject, MKAnnotation {
   var coordinate: CLLocationCoordinate2D {
     get{
       return CLLocationCoordinate2D(
-        latitude: pin.latitude,
-        longitude: pin.longitude
+//        latitude: pin.latitude,
+//        longitude: pin.longitude
       )
     }
     set {
-      pin.latitude = newValue.latitude
-      pin.longitude = newValue.longitude
+//      pin.latitude = newValue.latitude as NSNumber
+//      pin.longitude = newValue.longitude as NSNumber
     }
   }
   
