@@ -16,7 +16,7 @@ class TravelLocationsViewController: UIViewController {
   
   // MARK: Properties
   
-  var annotations = [MKPointAnnotation]()
+  //var annotations = [MKPointAnnotation]()
   
   var pins = [Pin]()
   
@@ -24,11 +24,16 @@ class TravelLocationsViewController: UIViewController {
   
   var dataController: DataController!
   
+  var editingPins: Bool = false
+  
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
+  @IBOutlet weak var editButton: UIBarButtonItem!
+  @IBOutlet weak var alertView: UIView!
+  @IBOutlet weak var alertViewHeightConstraint: NSLayoutConstraint!
   
-  
+  @IBOutlet weak var messageLabel: UILabel!
   // MARK: Actions
   
   @IBAction func handleLongPress(_ sender: UILongPressGestureRecognizer) {
@@ -47,17 +52,23 @@ class TravelLocationsViewController: UIViewController {
     case .changed:
       // have pin track user touch location
       break
-    
+      
     case .ended:
       // drop pin at last touchpoint
       break
-    
+      
     default:
       break
     }
     
   }
   
+  @IBAction func editButtonPressed(_ sender: UIBarButtonItem) {
+    editingPins = !editingPins
+    alertViewHeightConstraint.constant = editingPins ? 50 : 0
+    messageLabel.isHidden = !editingPins
+    sender.title = editingPins ? "Done": "Edit"
+  }
   
   // MARK: Lifecycle
   
@@ -92,15 +103,21 @@ class TravelLocationsViewController: UIViewController {
         let annotation = MKPointAnnotation()
         let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
         annotation.coordinate = coordinate
-        annotations.append(annotation)
+        //annotations.append(annotation)
         mapView.addAnnotation(annotation)
       }
-    
+      
     }
+    
+    configureUI()
   }
   
   
+  
   // MARK: Helper Methods
+  func configureUI() {
+    alertViewHeightConstraint.constant = 0
+  }
   
   let regionRadius: CLLocationDistance = 1000
   func centerMapOnLocation(location: CLLocation) {
@@ -125,7 +142,6 @@ class TravelLocationsViewController: UIViewController {
     
     // save coordinates to data controller
     
-    //let pin = Pin(lat: mapCoordinate.latitude, lon: mapCoordinate.longitude, context: self.sharedMainContext)
     let pin = Pin(context: dataController.viewContext)
     pin.latitude = mapCoordinate.latitude as NSNumber
     pin.longitude = mapCoordinate.longitude as NSNumber
@@ -138,9 +154,35 @@ class TravelLocationsViewController: UIViewController {
     let annotation = MKPointAnnotation()
     annotation.coordinate = mapCoordinate
     mapView.addAnnotation(annotation)
-  
+    
     // generate heptic feedback
     feedbackGenerator?.impactOccurred()
+  }
+  
+  
+  func removePin(with annotation: MKAnnotation) {
+    
+    // remove selected pin
+    mapView.removeAnnotation(annotation)
+    
+    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+    
+    let lat = annotation.coordinate.latitude as NSNumber
+    let lon = annotation.coordinate.longitude as NSNumber
+    
+    fetchRequest.predicate = NSPredicate(format: "latitude == %@ AND longitude == %@", lat, lon)
+    if let result = try? dataController.viewContext.fetch(fetchRequest) {
+      
+      for managedObject in result
+      {
+        let managedObjectData = managedObject as NSManagedObject
+        dataController.viewContext.delete(managedObjectData)
+      }
+    }
+    
+    // save context
+    try? dataController.viewContext.save()
+    
   }
   
 }
@@ -157,7 +199,13 @@ extension TravelLocationsViewController: MKMapViewDelegate {
   
   func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
     
-    view.setSelected(false, animated: true)
+    view.setSelected(true, animated: true)
+    
+    guard !editingPins
+      else {
+        removePin(with: view.annotation!)
+        return
+    }
     
     let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumVC") as! PhotoAlbumViewController
     print("passing annotation: \(view.annotation!.coordinate)")
@@ -167,6 +215,7 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     
     // deselect annotation
     mapView.deselectAnnotation(view.annotation, animated: true)
+    
   }
   
   func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
