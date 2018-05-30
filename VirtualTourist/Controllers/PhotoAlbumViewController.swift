@@ -8,23 +8,26 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class PhotoAlbumViewController: UIViewController {
   
   
   // MARK: Properties
   
-  var photos = [String]()
+  let inset: CGFloat = 4.0
+  let spacing: CGFloat = 2.0
+  let lineSpacing: CGFloat = 4.0
+  
+  var photos = [Photo]()
   let regionRadius: CLLocationDistance = 10000
   var selectedAnnotation: MKAnnotation? {
     didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
     }
   }
-  
-  let inset: CGFloat = 4.0
-  let spacing: CGFloat = 2.0
-  let lineSpacing: CGFloat = 4.0
+  var pin: Pin!
+  var dataController: DataController!
   
   // MARK: Outlets
   
@@ -49,8 +52,20 @@ class PhotoAlbumViewController: UIViewController {
     mapView.addAnnotation(selectedAnnotation!)
     centerMapOnLocation(annotation: selectedAnnotation!)
     
+    // load data using fetch request
+    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+    let predicate = NSPredicate(format: "pin == %@", pin)
+    fetchRequest.predicate = predicate
+    fetchRequest.sortDescriptors = []
+    
+    if let result = try? dataController.viewContext.fetch(fetchRequest) {
+      photos = result
+    }
+    
     // get photos from flickr
-    getPhotos()
+    if photos.count == 0 {
+      getPhotos()
+    }
   }
   
   // MARK: Helper Methods
@@ -105,15 +120,31 @@ class PhotoAlbumViewController: UIViewController {
         
         for result in photoResults {
           let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
-          self.photos.append(imageURLString)
-          
+          //self.photos.append(imageURLString)
+          self.addPhoto(with: imageURLString)
         }
         
-        performUIUpdatesOnMain {
-          self.collectionView.reloadData()
-        }
       }
       
+    }
+  }
+  
+  func addPhoto(with urlString: String) {
+    let photo = Photo(context: dataController.viewContext)
+    photo.imageURLString = urlString
+    photo.pin = pin
+    
+    let url = URL(string: urlString)
+    if let data = try? Data(contentsOf: url!) {
+      photo.imageData = data
+    }
+    
+    try? dataController.viewContext.save()
+    photos.insert(photo, at: 0)
+    
+    performUIUpdatesOnMain {
+//    self.collectionView.reloadData()
+      self.collectionView.insertItems(at: [IndexPath(row: 0, section: 0)])
     }
   }
   
@@ -140,18 +171,20 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    cell.photoImageView.image = nil
+    //cell.photoImageView.image = nil
     cell.toggleSpinner(true)
     
-    let photoLink = photos[indexPath.row]
+    //let photoLink = photos[indexPath.row]
     
-    cell.photoImageView.downloadedFrom(link: photoLink)
-    cell.photoImageView.contentMode = .scaleAspectFill
-    cell.photoImageView.clipsToBounds = true
-    cell.photoImageView.layer.cornerRadius = 2
+//    cell.photoImageView.downloadedFrom(link: photoLink)
     
+    let photo = photos[indexPath.row]
     
     performUIUpdatesOnMain {
+      cell.photoImageView.image = UIImage(data: photo.imageData!)
+      cell.photoImageView.contentMode = .scaleAspectFill
+      cell.photoImageView.clipsToBounds = true
+      cell.photoImageView.layer.cornerRadius = 2
       cell.toggleSpinner(false)
     }
     

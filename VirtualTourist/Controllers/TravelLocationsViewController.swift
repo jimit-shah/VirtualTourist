@@ -160,13 +160,9 @@ class TravelLocationsViewController: UIViewController {
   }
   
   
-  func removePin(with annotation: MKAnnotation) {
-    
-    // remove selected pin
-    mapView.removeAnnotation(annotation)
-    
+  fileprivate func fetchPin(with annotation: MKAnnotation) -> Pin? {
     let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-    
+    var pin = Pin()
     let lat = annotation.coordinate.latitude as NSNumber
     let lon = annotation.coordinate.longitude as NSNumber
     
@@ -175,14 +171,23 @@ class TravelLocationsViewController: UIViewController {
       
       for managedObject in result
       {
-        let managedObjectData = managedObject as NSManagedObject
-        dataController.viewContext.delete(managedObjectData)
+        //let managedObjectData = managedObject as NSManagedObject
+        //dataController.viewContext.delete(managedObjectData)
+        pin = managedObject as Pin
       }
     }
+    return pin
+  }
+  
+  func removePin(with annotation: MKAnnotation) {
     
-    // save context
+    // remove selected pin
+    mapView.removeAnnotation(annotation)
+    
+    if let pin = fetchPin(with: annotation) {
+      dataController.viewContext.delete(pin)
+    }
     try? dataController.viewContext.save()
-    
   }
   
 }
@@ -201,16 +206,20 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     
     view.setSelected(true, animated: true)
     
-    guard !editingPins
-      else {
-        removePin(with: view.annotation!)
-        return
+    
+    if editingPins {
+      removePin(with: view.annotation!)
+      return
     }
     
     let vc = storyboard?.instantiateViewController(withIdentifier: "PhotoAlbumVC") as! PhotoAlbumViewController
     print("passing annotation: \(view.annotation!.coordinate)")
     vc.selectedAnnotation = view.annotation
+    vc.dataController = dataController
     
+    if let pin = fetchPin(with: view.annotation!) {
+      vc.pin = pin
+    }
     navigationController!.pushViewController(vc, animated: true)
     
     // deselect annotation
