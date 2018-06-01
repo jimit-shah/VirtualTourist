@@ -134,7 +134,7 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </imageView>
-                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
                                                     <rect key="frame" x="37" y="37" width="37" height="37"/>
                                                     <color key="color" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </activityIndicatorView>
@@ -187,6 +187,7 @@
                         <outlet property="collectionView" destination="uTn-Ki-ric" id="KGC-Km-gwI"/>
                         <outlet property="flowLayout" destination="YR5-UG-ZOF" id="pE0-hf-Nn7"/>
                         <outlet property="mapView" destination="Cmc-yj-NxU" id="8bX-Ik-sNW"/>
+                        <outlet property="newCollectionButton" destination="dfH-Qf-HU2" id="3sN-wN-OmX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t3F-E2-L5N" userLabel="First Responder" sceneMemberID="firstResponder"/>

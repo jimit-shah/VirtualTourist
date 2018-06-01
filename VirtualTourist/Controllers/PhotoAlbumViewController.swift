@@ -35,10 +35,28 @@ class PhotoAlbumViewController: UIViewController {
   @IBOutlet weak var collectionView: UICollectionView!
   @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
   
+  @IBOutlet weak var newCollectionButton: UIBarButtonItem!
   // MARK: Actions
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
-    
+      photos.removeAll()
+      deleteAllPhotos()
+      //collectionView.reloadData()
+      getPhotos()
+  }
+  
+  func deleteAllPhotos() {
+    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+    let predicate = NSPredicate(format: "pin == %@", pin)
+    fetchRequest.predicate = predicate
+    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+    do {
+      let batchDeleteResult = try dataController.viewContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
+      print("The batch delete request has deleted \(batchDeleteResult.result!) records.")
+    } catch {
+      let updateError = error as NSError
+      print("\(updateError), \(updateError.userInfo)")
+    }
   }
   
   // MARK: Lifecycle
@@ -65,6 +83,8 @@ class PhotoAlbumViewController: UIViewController {
     // get photos from flickr
     if photos.count == 0 {
       getPhotos()
+    } else {
+      newCollectionButton.isEnabled = true
     }
   }
   
@@ -83,6 +103,9 @@ class PhotoAlbumViewController: UIViewController {
   // MARK: Get Photos Method
   
   func getPhotos() {
+    
+    newCollectionButton.isEnabled = false
+    
     var lat: Double!
     var lon: Double!
     
@@ -124,6 +147,12 @@ class PhotoAlbumViewController: UIViewController {
           self.addPhoto(with: imageURLString)
         }
         
+        performUIUpdatesOnMain {
+          //self.enableNewCollection = true
+          self.collectionView.reloadData()
+          self.newCollectionButton.isEnabled = true
+        }
+        
       }
       
     }
@@ -140,13 +169,17 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     try? dataController.viewContext.save()
-    photos.insert(photo, at: 0)
+    self.photos.insert(photo, at: 0)
     
-    performUIUpdatesOnMain {
+//    performUIUpdatesOnMain {
+//
 //    self.collectionView.reloadData()
-      self.collectionView.insertItems(at: [IndexPath(row: 0, section: 0)])
-    }
+//      self.collectionView.insertItems(at: [IndexPath(item: self.photos.count, section: 0)])
+//    let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
+//      self.collectionView.insertItems(at: [insertedIndexPath])
+//    }
   }
+  
   
 }
 
@@ -171,7 +204,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    //cell.photoImageView.image = nil
+    cell.photoImageView.image = nil
     cell.toggleSpinner(true)
     
     //let photoLink = photos[indexPath.row]
