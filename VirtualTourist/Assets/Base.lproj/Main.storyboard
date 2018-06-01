@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ecA-Nj-Adf">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ecA-Nj-Adf">
     <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -130,23 +130,35 @@
                                             <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
+                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Bi-iG-8j0">
+                                                    <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
+                                                    <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <userDefinedRuntimeAttributes>
+                                                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                            <integer key="value" value="10"/>
+                                                        </userDefinedRuntimeAttribute>
+                                                    </userDefinedRuntimeAttributes>
+                                                </view>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
+                                                    <rect key="frame" x="37" y="37" width="37" height="37"/>
+                                                </activityIndicatorView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Sbk-Rb-5cm">
                                                     <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </imageView>
-                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
-                                                    <rect key="frame" x="37" y="37" width="37" height="37"/>
-                                                    <color key="color" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                </activityIndicatorView>
                                             </subviews>
                                         </view>
                                         <constraints>
                                             <constraint firstItem="zj4-qb-edX" firstAttribute="centerY" secondItem="wOR-Me-KxC" secondAttribute="centerY" id="FIa-m8-typ"/>
+                                            <constraint firstAttribute="trailing" secondItem="9Bi-iG-8j0" secondAttribute="trailing" id="IAJ-gD-s7o"/>
                                             <constraint firstItem="Sbk-Rb-5cm" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="TvK-0o-mJU"/>
                                             <constraint firstItem="zj4-qb-edX" firstAttribute="centerX" secondItem="wOR-Me-KxC" secondAttribute="centerX" id="bSc-6h-DMa"/>
                                             <constraint firstAttribute="bottom" secondItem="Sbk-Rb-5cm" secondAttribute="bottom" id="bhA-gM-Xk6"/>
+                                            <constraint firstItem="9Bi-iG-8j0" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="cSy-84-yWh"/>
                                             <constraint firstItem="Sbk-Rb-5cm" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="cyO-DZ-Jks"/>
                                             <constraint firstAttribute="trailing" secondItem="Sbk-Rb-5cm" secondAttribute="trailing" id="l6P-Ye-dls"/>
+                                            <constraint firstItem="9Bi-iG-8j0" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="nGe-Uh-AD6"/>
+                                            <constraint firstAttribute="bottom" secondItem="9Bi-iG-8j0" secondAttribute="bottom" id="zNB-wh-pJF"/>
                                         </constraints>
                                         <size key="customSize" width="110" height="110"/>
                                         <connections>
@@ -192,7 +204,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="t3F-E2-L5N" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="872.79999999999995" y="108.39580209895054"/>
+            <point key="canvasLocation" x="872.79999999999995" y="107.88177339901478"/>
         </scene>
     </scenes>
 </document>

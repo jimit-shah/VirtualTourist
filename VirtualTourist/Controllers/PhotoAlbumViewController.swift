@@ -41,10 +41,13 @@ class PhotoAlbumViewController: UIViewController {
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
       photos.removeAll()
       deleteAllPhotos()
-      //collectionView.reloadData()
+      collectionView.reloadData()
       getPhotos()
   }
   
+  func loadingPlaceholder() {
+    
+  }
   func deleteAllPhotos() {
     let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
     let predicate = NSPredicate(format: "pin == %@", pin)
@@ -188,7 +191,7 @@ class PhotoAlbumViewController: UIViewController {
 extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return photos.count
+    return photos.count == 0 ? 30 : photos.count
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -204,10 +207,12 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    cell.photoImageView.image = nil
-    cell.toggleSpinner(true)
-    
-    //let photoLink = photos[indexPath.row]
+    // if no image fetched yet, show loading view.
+    guard photos.count != 0 else {
+      cell.photoImageView.image = nil
+      cell.toggleSpinner(true)
+      return
+    }
     
 //    cell.photoImageView.downloadedFrom(link: photoLink)
     
