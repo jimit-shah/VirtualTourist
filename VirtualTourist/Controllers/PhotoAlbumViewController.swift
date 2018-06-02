@@ -147,31 +147,7 @@ class PhotoAlbumViewController: UIViewController {
     }
   }
   
-  // MARK: Configure Cell
   
-  func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
-    
-    // if no image fetched yet, show loading view.
-//    guard collectionView.cellForItem(at: indexPath) != nil else {
-//      return
-//    }
-    
-    guard photos.count != 0 else {
-      
-      cell.photoImageView.image = nil
-      cell.toggleSpinner(true)
-      return
-    }
-    
-    print("Scrolling....")
-    
-    let photo = photos[indexPath.row]
-    
-    performUIUpdatesOnMain {
-      cell.photo = photo
-    }
-    
-  }
   
   func addPhoto(with urlString: String) {
     let photo = Photo(context: dataController.viewContext)
@@ -218,6 +194,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     return photos.count == 0 ? 30 : photos.count
   }
   
+  
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
@@ -225,6 +202,24 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     configurePhotoCell(cell, cellForItemAt: indexPath)
     
     return cell
+  }
+  
+  // MARK: Configure Cell
+  
+  func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
+    
+    if photos.count < 30 {
+      cell.photoImageView.image = nil
+      cell.toggleSpinner(true)
+      return
+    }
+    
+    let photo = photos[indexPath.row]
+    
+    performUIUpdatesOnMain {
+      cell.photo = photo
+    }
+    
   }
   
 }
