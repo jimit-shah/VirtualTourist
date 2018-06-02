@@ -30,4 +30,6 @@ extension UIImageView {
     guard let url = URL(string: link) else { return }
     downloadedFrom(url: url, contentMode: mode)
   }
+  
 }
+

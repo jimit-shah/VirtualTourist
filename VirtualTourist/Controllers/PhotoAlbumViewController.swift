@@ -28,6 +28,7 @@ class PhotoAlbumViewController: UIViewController {
   }
   var pin: Pin!
   var dataController: DataController!
+  var photosToRemove = [Photo]()
   
   // MARK: Outlets
   
@@ -39,28 +40,13 @@ class PhotoAlbumViewController: UIViewController {
   // MARK: Actions
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
-      photos.removeAll()
-      deleteAllPhotos()
-      collectionView.reloadData()
-      getPhotos()
+    photos.removeAll()
+    deleteAllPhotos()
+    collectionView.reloadData()
+    getPhotos()
   }
   
-  func loadingPlaceholder() {
-    
-  }
-  func deleteAllPhotos() {
-    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-    let predicate = NSPredicate(format: "pin == %@", pin)
-    fetchRequest.predicate = predicate
-    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-    do {
-      let batchDeleteResult = try dataController.viewContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
-      print("The batch delete request has deleted \(batchDeleteResult.result!) records.")
-    } catch {
-      let updateError = error as NSError
-      print("\(updateError), \(updateError.userInfo)")
-    }
-  }
+  
   
   // MARK: Lifecycle
   
@@ -161,12 +147,39 @@ class PhotoAlbumViewController: UIViewController {
     }
   }
   
+  // MARK: Configure Cell
+  
+  func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
+    
+    // if no image fetched yet, show loading view.
+//    guard collectionView.cellForItem(at: indexPath) != nil else {
+//      return
+//    }
+    
+    guard photos.count != 0 else {
+      
+      cell.photoImageView.image = nil
+      cell.toggleSpinner(true)
+      return
+    }
+    
+    print("Scrolling....")
+    
+    let photo = photos[indexPath.row]
+    
+    performUIUpdatesOnMain {
+      cell.photo = photo
+    }
+    
+  }
+  
   func addPhoto(with urlString: String) {
     let photo = Photo(context: dataController.viewContext)
     photo.imageURLString = urlString
     photo.pin = pin
     
     let url = URL(string: urlString)
+    
     if let data = try? Data(contentsOf: url!) {
       photo.imageData = data
     }
@@ -174,13 +187,24 @@ class PhotoAlbumViewController: UIViewController {
     try? dataController.viewContext.save()
     self.photos.insert(photo, at: 0)
     
-//    performUIUpdatesOnMain {
-//
-//    self.collectionView.reloadData()
-//      self.collectionView.insertItems(at: [IndexPath(item: self.photos.count, section: 0)])
-//    let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
-//      self.collectionView.insertItems(at: [insertedIndexPath])
-//    }
+  }
+  
+  func removePhoto(at indexPath: IndexPath) {
+    
+  }
+  
+  func deleteAllPhotos() {
+    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
+    let predicate = NSPredicate(format: "pin == %@", pin)
+    fetchRequest.predicate = predicate
+    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+    do {
+      let batchDeleteResult = try dataController.viewContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
+      print("The batch delete request has deleted \(batchDeleteResult.result!) records.")
+    } catch {
+      let updateError = error as NSError
+      print("\(updateError), \(updateError.userInfo)")
+    }
   }
   
   
@@ -203,41 +227,25 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     return cell
   }
   
-  // MARK: Configure Cell
-  
-  func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
-    
-    // if no image fetched yet, show loading view.
-    guard photos.count != 0 else {
-      cell.photoImageView.image = nil
-      cell.toggleSpinner(true)
-      return
-    }
-    
-//    cell.photoImageView.downloadedFrom(link: photoLink)
-    
-    let photo = photos[indexPath.row]
-    
-    performUIUpdatesOnMain {
-      cell.photoImageView.image = UIImage(data: photo.imageData!)
-      cell.photoImageView.contentMode = .scaleAspectFill
-      cell.photoImageView.clipsToBounds = true
-      cell.photoImageView.layer.cornerRadius = 2
-      cell.toggleSpinner(false)
-    }
-    
-  }
-  
 }
-
 
 
 // MARK: CollectionView Delegate Methods
 
 extension PhotoAlbumViewController: UICollectionViewDelegate {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    collectionView.deselectItem(at: indexPath, animated: true)
+    //collectionView.deselectItem(at: indexPath, animated: true)
+    
+    //    collectionView.cellForItemAtIndexPath(indexPath)?.backgroundColor = UIColor.grayColor()
+    
+    //let selectedPhoto = photos[indexPath.row]
+    //if let cell = collectionView.cellForItem(at: indexPath) as? PhotoCollectionViewCell {
+    //cell.contentView.backgroundColor = UIColor.init(white: 1.0, alpha: 1 )
+    //cell.photoImageView.alpha = 0.5
+    //  photosToRemove.append(selectedPhoto)
+    //}
   }
+  
 }
 
 
