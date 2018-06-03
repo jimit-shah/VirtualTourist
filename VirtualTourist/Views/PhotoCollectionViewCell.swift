@@ -28,7 +28,11 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     }
   }
   
-  var isEditing: Bool = false
+//  var isEditing: Bool = false {
+//    didSet {
+//      deleteView.isHidden = !isEditing
+//    }
+//  }
   
   func toggleSpinner(_ show: Bool) {
     if show {
@@ -45,7 +49,6 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     super.awakeFromNib()
     deleteView.layer.cornerRadius = deleteView.bounds.width / 2
     deleteView.layer.masksToBounds = true
-    deleteView.isHidden = true
   }
   
   

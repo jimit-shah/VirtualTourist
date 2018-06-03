@@ -29,14 +29,15 @@ class PhotoAlbumViewController: UIViewController {
   var pin: Pin!
   var dataController: DataController!
   var photosToRemove = [Photo]()
+  var editingMode: Bool = false
   
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
   @IBOutlet weak var collectionView: UICollectionView!
   @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
-  
   @IBOutlet weak var newCollectionButton: UIBarButtonItem!
+  
   // MARK: Actions
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
@@ -75,10 +76,11 @@ class PhotoAlbumViewController: UIViewController {
     } else {
       newCollectionButton.isEnabled = true
     }
+    
+    navigationItem.rightBarButtonItem = editButtonItem
   }
   
   // MARK: Helper Methods
-  
   
   func centerMapOnLocation(annotation: MKAnnotation) {
     let coordinateRegion = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
@@ -137,8 +139,9 @@ class PhotoAlbumViewController: UIViewController {
         }
         
         performUIUpdatesOnMain {
-          //self.enableNewCollection = true
           self.collectionView.reloadData()
+//          let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
+//          self.collectionView.insertItems(at: [insertedIndexPath])
           self.newCollectionButton.isEnabled = true
         }
         
@@ -208,17 +211,29 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
+    
+    
     if photos.count < 30 {
       cell.photoImageView.image = nil
       cell.toggleSpinner(true)
+      cell.deleteView.isHidden = true
       return
     }
+    
     
     let photo = photos[indexPath.row]
     
     performUIUpdatesOnMain {
       cell.photo = photo
+      if self.editingMode {
+        cell.deleteView.isHidden = false
+      } else {
+        cell.deleteView.isHidden = true
+      }
+      
     }
+    
+    
     
   }
   
@@ -239,6 +254,18 @@ extension PhotoAlbumViewController: UICollectionViewDelegate {
     //cell.photoImageView.alpha = 0.5
     //  photosToRemove.append(selectedPhoto)
     //}
+  }
+  
+  
+  // MARK: Delete Items
+  
+  override func setEditing(_ editing: Bool, animated: Bool) {
+    super.setEditing(editing, animated: animated)
+    newCollectionButton.isEnabled = !editing
+    
+    editingMode = editing
+    collectionView.reloadData()
+    
   }
   
 }
