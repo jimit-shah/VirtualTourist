@@ -159,6 +159,9 @@
                                                                     <constraint firstAttribute="height" constant="20" id="y0k-lQ-RDd"/>
                                                                 </constraints>
                                                                 <state key="normal" image="delete"/>
+                                                                <connections>
+                                                                    <action selector="deleteButtonTapped:" destination="wOR-Me-KxC" eventType="touchUpInside" id="Tzh-fy-6Ol"/>
+                                                                </connections>
                                                             </button>
                                                         </subviews>
                                                         <constraints>

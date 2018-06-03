@@ -8,6 +8,10 @@
 
 import UIKit
 
+protocol PhotoCellDelegate: class {
+  func delete(cell: PhotoCollectionViewCell)
+}
+
 class PhotoCollectionViewCell: UICollectionViewCell {
     
   @IBOutlet weak var photoImageView: UIImageView!
@@ -27,6 +31,8 @@ class PhotoCollectionViewCell: UICollectionViewCell {
       }
     }
   }
+  
+  weak var delegate: PhotoCellDelegate?
   
 //  var isEditing: Bool = false {
 //    didSet {
@@ -51,5 +57,8 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     deleteView.layer.masksToBounds = true
   }
   
+  @IBAction func deleteButtonTapped(_ sender: UIButton) {
+    delegate?.delete(cell: self)
+  }
   
 }

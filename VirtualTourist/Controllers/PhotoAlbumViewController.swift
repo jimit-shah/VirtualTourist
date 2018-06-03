@@ -221,10 +221,11 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     }
     
     
-    let photo = photos[indexPath.row]
+    let photo = photos[indexPath.item]
     
     performUIUpdatesOnMain {
       cell.photo = photo
+      cell.delegate = self
       if self.editingMode {
         cell.deleteView.isHidden = false
       } else {
@@ -294,5 +295,19 @@ extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
     return lineSpacing
   }
+  
+}
+
+extension PhotoAlbumViewController: PhotoCellDelegate {
+  
+  func delete(cell: PhotoCollectionViewCell) {
+    if let indexPath = collectionView.indexPath(for: cell) {
+      // delete photo from datasource
+      photos.remove(at: indexPath.item)
+      // delete photo from collectionview at the indexpath.
+      collectionView.deleteItems(at: [indexPath])
+    }
+  }
+  
   
 }
