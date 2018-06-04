@@ -16,17 +16,13 @@ class TravelLocationsViewController: UIViewController {
   
   // MARK: Properties
   
-  //var annotations = [MKPointAnnotation]()
-  
-  var pins = [Pin]()
-  
   var feedbackGenerator: UIImpactFeedbackGenerator? = nil
   
   var dataController: DataController!
   
   var editingPins: Bool = false
   
-  var fetchResultsController: NSFetchedResultsController<Pin>!
+  var fetchedResultsController: NSFetchedResultsController<Pin>!
   
   
   // MARK: Outlets
@@ -77,13 +73,13 @@ class TravelLocationsViewController: UIViewController {
   
   fileprivate func setupFetchResultsController() {
     let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-    //fetchRequest.sortDescriptors = []
+    fetchRequest.sortDescriptors = []
     
-    fetchResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-    fetchResultsController.delegate = self
+    fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+    fetchedResultsController.delegate = self
     
     do {
-      try fetchResultsController.performFetch()
+      try fetchedResultsController.performFetch()
     } catch {
       fatalError("The fetch could not perform: \(error.localizedDescription)")
     }
@@ -91,6 +87,7 @@ class TravelLocationsViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
+    configureUI()
     
     // load region from user defaults.
     let savedRegion = UserDefaults.standard.object(forKey: AppDelegate.UserDefaultKeys.MapViewRegion) as! [String: Any]
@@ -110,18 +107,11 @@ class TravelLocationsViewController: UIViewController {
     mapView.setCenter(region.center, animated: true)
     mapView.delegate = self
     
-    
     setupFetchResultsController()
     
-    reloadPins()
-    
-    configureUI()
+    updateMapAnnotations()
   }
   
-  override func viewDidDisappear(_ animated: Bool) {
-    super.viewDidDisappear(animated)
-    fetchResultsController = nil
-  }
   
   // MARK: Helper Methods
   func configureUI() {
@@ -150,71 +140,63 @@ class TravelLocationsViewController: UIViewController {
     let mapCoordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
     
     // save coordinates to data controller
-    
     let pin = Pin(context: dataController.viewContext)
     pin.latitude = mapCoordinate.latitude as NSNumber
     pin.longitude = mapCoordinate.longitude as NSNumber
     
     try? dataController.viewContext.save()
     
-    reloadPins()
-//    pins.insert(pin, at: 0)
-//
-//    // add pin to mapView
-//
-//    let annotation = MKPointAnnotation()
-//    annotation.coordinate = mapCoordinate
-//    mapView.addAnnotation(annotation)
-//
-    // generate heptic feedback
+    // add to map view
+    let annotation = MKPointAnnotation()
+    annotation.coordinate = mapCoordinate
+    mapView.addAnnotation(annotation)
+    
     feedbackGenerator?.impactOccurred()
   }
   
-  fileprivate func reloadPins() {
-    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-    fetchRequest.sortDescriptors = []
+  func updateMapAnnotations() {
+    let pins = fetchedResultsController.fetchedObjects!
+    var annotations = [MKAnnotation]()
     
-    if let result = try? dataController.viewContext.fetch(fetchRequest) {
-      pins = result
-      
-      for pin in pins {
-        let annotation = MKPointAnnotation()
-        let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
-        annotation.coordinate = coordinate
-        mapView.addAnnotation(annotation)
-      }
-      
+    for pin in pins {
+      let annotation = MKPointAnnotation()
+      let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
+      annotation.coordinate = coordinate
+      annotations.append(annotation)
     }
+    
+    self.mapView.removeAnnotations(self.mapView.annotations)
+    self.mapView.addAnnotations(annotations)
   }
   
-  fileprivate func fetchPin(with annotation: MKAnnotation) -> Pin? {
-    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-    var pin = Pin()
+  func fetchPin(with annotation: MKAnnotation) -> Pin? {
     let lat = annotation.coordinate.latitude as NSNumber
     let lon = annotation.coordinate.longitude as NSNumber
+    var pin = Pin()
     
-    fetchRequest.predicate = NSPredicate(format: "latitude == %@ AND longitude == %@", lat, lon)
-    if let result = try? dataController.viewContext.fetch(fetchRequest) {
-      
-      for managedObject in result
-      {
-        //let managedObjectData = managedObject as NSManagedObject
-        //dataController.viewContext.delete(managedObjectData)
-        pin = managedObject as Pin
+    if let pins = fetchedResultsController.fetchedObjects {
+      for object in pins {
+        if object.latitude == lat && object.longitude == lon {
+          print("pin found")
+          pin = object
+        }
       }
     }
+    print("Pin Tapped: ----- \(pin.latitude!) \(pin.longitude!)")
     return pin
+    
   }
   
   func removePin(with annotation: MKAnnotation) {
     
-    // remove selected pin
+    // remove selected pin from mapView
     mapView.removeAnnotation(annotation)
-    
+
+    // remove pin from context
     if let pin = fetchPin(with: annotation) {
       dataController.viewContext.delete(pin)
     }
-    try? dataController.viewContext.save()
+    
   }
   
 }
@@ -229,11 +211,11 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     
   }
   
+  // mapview did select view
   func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-    
+
     view.setSelected(true, animated: true)
-    
-    
+
     if editingPins {
       removePin(with: view.annotation!)
       return
@@ -254,6 +236,7 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     
   }
   
+  // mapview view for annotation
   func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
     var annotationView: MKAnnotationView
     
@@ -264,7 +247,6 @@ extension TravelLocationsViewController: MKMapViewDelegate {
     }
     
     annotationView.isDraggable = true
-    //annotationView.canShowCallout = true
     return annotationView
     
   }
@@ -275,5 +257,9 @@ extension TravelLocationsViewController: MKMapViewDelegate {
 
 extension TravelLocationsViewController: NSFetchedResultsControllerDelegate {
   
+  
+  func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+    updateMapAnnotations()
+  }
 }
 
