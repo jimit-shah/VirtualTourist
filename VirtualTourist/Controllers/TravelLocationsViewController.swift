@@ -26,6 +26,9 @@ class TravelLocationsViewController: UIViewController {
   
   var editingPins: Bool = false
   
+  var fetchResultsController: NSFetchedResultsController<Pin>!
+  
+  
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
@@ -72,6 +75,20 @@ class TravelLocationsViewController: UIViewController {
   
   // MARK: Lifecycle
   
+  fileprivate func setupFetchResultsController() {
+    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+    //fetchRequest.sortDescriptors = []
+    
+    fetchResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+    fetchResultsController.delegate = self
+    
+    do {
+      try fetchResultsController.performFetch()
+    } catch {
+      fatalError("The fetch could not perform: \(error.localizedDescription)")
+    }
+  }
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -93,26 +110,18 @@ class TravelLocationsViewController: UIViewController {
     mapView.setCenter(region.center, animated: true)
     mapView.delegate = self
     
-    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
-    fetchRequest.sortDescriptors = []
     
-    if let result = try? dataController.viewContext.fetch(fetchRequest) {
-      pins = result
-      
-      for pin in pins {
-        let annotation = MKPointAnnotation()
-        let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
-        annotation.coordinate = coordinate
-        //annotations.append(annotation)
-        mapView.addAnnotation(annotation)
-      }
-      
-    }
+    setupFetchResultsController()
+    
+    reloadPins()
     
     configureUI()
   }
   
-  
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+    fetchResultsController = nil
+  }
   
   // MARK: Helper Methods
   func configureUI() {
@@ -147,18 +156,36 @@ class TravelLocationsViewController: UIViewController {
     pin.longitude = mapCoordinate.longitude as NSNumber
     
     try? dataController.viewContext.save()
-    pins.insert(pin, at: 0)
     
-    // add pin to mapView
-    
-    let annotation = MKPointAnnotation()
-    annotation.coordinate = mapCoordinate
-    mapView.addAnnotation(annotation)
-    
+    reloadPins()
+//    pins.insert(pin, at: 0)
+//
+//    // add pin to mapView
+//
+//    let annotation = MKPointAnnotation()
+//    annotation.coordinate = mapCoordinate
+//    mapView.addAnnotation(annotation)
+//
     // generate heptic feedback
     feedbackGenerator?.impactOccurred()
   }
   
+  fileprivate func reloadPins() {
+    let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+    fetchRequest.sortDescriptors = []
+    
+    if let result = try? dataController.viewContext.fetch(fetchRequest) {
+      pins = result
+      
+      for pin in pins {
+        let annotation = MKPointAnnotation()
+        let coordinate = CLLocationCoordinate2D(latitude: pin.latitude as! CLLocationDegrees, longitude: pin.longitude as! CLLocationDegrees)
+        annotation.coordinate = coordinate
+        mapView.addAnnotation(annotation)
+      }
+      
+    }
+  }
   
   fileprivate func fetchPin(with annotation: MKAnnotation) -> Pin? {
     let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
@@ -244,4 +271,9 @@ extension TravelLocationsViewController: MKMapViewDelegate {
   
 }
 
+// MARK: Fetch resutls controller delegate methods
+
+extension TravelLocationsViewController: NSFetchedResultsControllerDelegate {
+  
+}
 

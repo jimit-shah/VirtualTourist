@@ -30,7 +30,12 @@ class PhotoAlbumViewController: UIViewController {
   var dataController: DataController!
   var photosToRemove = [Photo]()
   var editingMode: Bool = false
+  var photo: Photo!
   
+  var numberOfPhotos: Int {
+    return photos.count
+  }
+
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
@@ -137,7 +142,7 @@ class PhotoAlbumViewController: UIViewController {
           //self.photos.append(imageURLString)
           self.addPhoto(with: imageURLString)
         }
-        
+
         performUIUpdatesOnMain {
           self.collectionView.reloadData()
 //          let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
@@ -158,19 +163,29 @@ class PhotoAlbumViewController: UIViewController {
     photo.pin = pin
     
     let url = URL(string: urlString)
-    
+
     if let data = try? Data(contentsOf: url!) {
       photo.imageData = data
     }
     
     try? dataController.viewContext.save()
     self.photos.insert(photo, at: 0)
-    
+    updateEditButtonState()
   }
   
-  func removePhoto(at indexPath: IndexPath) {
+  func deletePhoto(at indexPath: IndexPath) {
+    //let photoToDelete = fetchedResultsController.object(at: indexPath)
+    let photoToDelete = photos[indexPath.item]
+    dataController.viewContext.delete(photoToDelete)
+    try? dataController.viewContext.save()
     
+    photos.remove(at: indexPath.item)
+    // delete photo from collectionview at the indexpath.
+    collectionView.deleteItems(at: [indexPath])
+    
+    updateEditButtonState()
   }
+  
   
   func deleteAllPhotos() {
     let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
@@ -184,9 +199,13 @@ class PhotoAlbumViewController: UIViewController {
       let updateError = error as NSError
       print("\(updateError), \(updateError.userInfo)")
     }
+    
+    updateEditButtonState()
   }
   
-  
+  func updateEditButtonState() {
+    navigationItem.rightBarButtonItem?.isEnabled = photos.count > 0
+  }
 }
 
 // MARK: CollectionView Data Source Methods
@@ -194,7 +213,7 @@ class PhotoAlbumViewController: UIViewController {
 extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return photos.count == 0 ? 30 : photos.count
+    return photos.count == 0 ? 30 : numberOfPhotos
   }
   
   
@@ -303,9 +322,10 @@ extension PhotoAlbumViewController: PhotoCellDelegate {
   func delete(cell: PhotoCollectionViewCell) {
     if let indexPath = collectionView.indexPath(for: cell) {
       // delete photo from datasource
-      photos.remove(at: indexPath.item)
+//      photos.remove(at: indexPath.item)
       // delete photo from collectionview at the indexpath.
-      collectionView.deleteItems(at: [indexPath])
+//      collectionView.deleteItems(at: [indexPath])
+      deletePhoto(at: indexPath)
     }
   }
   
