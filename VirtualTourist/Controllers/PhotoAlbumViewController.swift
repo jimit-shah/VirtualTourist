@@ -20,7 +20,7 @@ class PhotoAlbumViewController: UIViewController {
   let lineSpacing: CGFloat = 4.0
   
   var photos = [Photo]()
-  let regionRadius: CLLocationDistance = 10000
+  let regionRadius: CLLocationDistance = 50000
   var selectedAnnotation: MKAnnotation? {
     didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
@@ -35,6 +35,18 @@ class PhotoAlbumViewController: UIViewController {
   var numberOfPhotos: Int {
     return photos.count
   }
+  
+  lazy var fetchedResultsController: NSFetchedResultsController<Photo> = {
+    
+    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+    let predicate = NSPredicate(format: "pin == %@", pin)
+    fetchRequest.predicate = predicate
+    fetchRequest.sortDescriptors = []
+    
+    let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+    
+    return fetchedResultsController
+  }()
 
   // MARK: Outlets
   
@@ -61,6 +73,8 @@ class PhotoAlbumViewController: UIViewController {
     collectionView.dataSource = self
     collectionView.delegate = self
     
+    navigationItem.rightBarButtonItem = editButtonItem
+    
     // load annotation on map and set region
     mapView.addAnnotation(selectedAnnotation!)
     centerMapOnLocation(annotation: selectedAnnotation!)
@@ -75,6 +89,8 @@ class PhotoAlbumViewController: UIViewController {
       photos = result
     }
     
+    updateEditButtonState()
+    
     // get photos from flickr
     if photos.count == 0 {
       getPhotos()
@@ -82,7 +98,8 @@ class PhotoAlbumViewController: UIViewController {
       newCollectionButton.isEnabled = true
     }
     
-    navigationItem.rightBarButtonItem = editButtonItem
+    
+    
   }
   
   // MARK: Helper Methods
@@ -101,6 +118,7 @@ class PhotoAlbumViewController: UIViewController {
   func getPhotos() {
     
     newCollectionButton.isEnabled = false
+    
     
     var lat: Double!
     var lon: Double!
@@ -148,6 +166,7 @@ class PhotoAlbumViewController: UIViewController {
 //          let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
 //          self.collectionView.insertItems(at: [insertedIndexPath])
           self.newCollectionButton.isEnabled = true
+          self.updateEditButtonState()
         }
         
       }
@@ -170,7 +189,7 @@ class PhotoAlbumViewController: UIViewController {
     
     try? dataController.viewContext.save()
     self.photos.insert(photo, at: 0)
-    updateEditButtonState()
+    
   }
   
   func deletePhoto(at indexPath: IndexPath) {
@@ -183,6 +202,9 @@ class PhotoAlbumViewController: UIViewController {
     // delete photo from collectionview at the indexpath.
     collectionView.deleteItems(at: [indexPath])
     
+    if numberOfPhotos == 0 {
+      setEditing(false, animated: true)
+    }
     updateEditButtonState()
   }
   
@@ -200,6 +222,7 @@ class PhotoAlbumViewController: UIViewController {
       print("\(updateError), \(updateError.userInfo)")
     }
     
+    setEditing(false, animated: true)
     updateEditButtonState()
   }
   
@@ -230,8 +253,6 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    
-    
     if photos.count < 30 {
       cell.photoImageView.image = nil
       cell.toggleSpinner(true)
@@ -239,8 +260,8 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
       return
     }
     
-    
     let photo = photos[indexPath.item]
+    
     
     performUIUpdatesOnMain {
       cell.photo = photo

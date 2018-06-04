@@ -75,7 +75,7 @@ class TravelLocationsViewController: UIViewController {
     let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
     fetchRequest.sortDescriptors = []
     
-    fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+    fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "Pins")
     fetchedResultsController.delegate = self
     
     do {
