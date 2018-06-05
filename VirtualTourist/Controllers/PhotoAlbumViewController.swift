@@ -19,7 +19,6 @@ class PhotoAlbumViewController: UIViewController {
   let spacing: CGFloat = 2.0
   let lineSpacing: CGFloat = 4.0
   
-  var photos = [Photo]()
   let regionRadius: CLLocationDistance = 50000
   var selectedAnnotation: MKAnnotation? {
     didSet {
@@ -32,22 +31,19 @@ class PhotoAlbumViewController: UIViewController {
   var editingMode: Bool = false
   var photo: Photo!
   
-  var numberOfPhotos: Int {
-    return photos.count
-  }
+  var fetchedResultsController: NSFetchedResultsController<Photo>!
+  //  var numberOfPhotos: Int {
+  //    return photos.count
+  //  }
   
-  lazy var fetchedResultsController: NSFetchedResultsController<Photo> = {
-    
-    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
-    let predicate = NSPredicate(format: "pin == %@", pin)
-    fetchRequest.predicate = predicate
-    fetchRequest.sortDescriptors = []
-    
-    let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
-    
-    return fetchedResultsController
-  }()
-
+  var selectedIndexes = [IndexPath]()
+  
+  // Keep the changes. We will keep track of insertions, deletions, and updates.
+  var insertedIndexPaths: [IndexPath]!
+  var deletedIndexPaths: [IndexPath]!
+  var updatedIndexPaths: [IndexPath]!
+  
+  
   // MARK: Outlets
   
   @IBOutlet weak var mapView: MKMapView!
@@ -58,7 +54,6 @@ class PhotoAlbumViewController: UIViewController {
   // MARK: Actions
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
-    photos.removeAll()
     deleteAllPhotos()
     collectionView.reloadData()
     getPhotos()
@@ -80,29 +75,42 @@ class PhotoAlbumViewController: UIViewController {
     centerMapOnLocation(annotation: selectedAnnotation!)
     
     // load data using fetch request
-    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
-    let predicate = NSPredicate(format: "pin == %@", pin)
-    fetchRequest.predicate = predicate
-    fetchRequest.sortDescriptors = []
+    setupFetchResultsController()
     
-    if let result = try? dataController.viewContext.fetch(fetchRequest) {
-      photos = result
-    }
+    //    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+    //    let predicate = NSPredicate(format: "pin == %@", pin)
+    //    fetchRequest.predicate = predicate
+    //    fetchRequest.sortDescriptors = []
     
     updateEditButtonState()
     
     // get photos from flickr
-    if photos.count == 0 {
+    if fetchedResultsController.sections?.count == 0 {
       getPhotos()
     } else {
       newCollectionButton.isEnabled = true
     }
     
     
-    
   }
   
   // MARK: Helper Methods
+  
+  fileprivate func setupFetchResultsController() {
+    let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+    let predicate = NSPredicate(format: "pin == %@", pin)
+    fetchRequest.predicate = predicate
+    fetchRequest.sortDescriptors = []
+    
+    let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
+    fetchedResultsController.delegate = self
+    
+    do {
+      try fetchedResultsController.performFetch()
+    } catch {
+      fatalError("The fetch could not perform: \(error.localizedDescription)")
+    }
+  }
   
   func centerMapOnLocation(annotation: MKAnnotation) {
     let coordinateRegion = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
@@ -118,7 +126,6 @@ class PhotoAlbumViewController: UIViewController {
   func getPhotos() {
     
     newCollectionButton.isEnabled = false
-    
     
     var lat: Double!
     var lon: Double!
@@ -160,11 +167,9 @@ class PhotoAlbumViewController: UIViewController {
           //self.photos.append(imageURLString)
           self.addPhoto(with: imageURLString)
         }
-
+        
         performUIUpdatesOnMain {
           self.collectionView.reloadData()
-//          let insertedIndexPath = IndexPath(item: self.photos.count, section: 0)
-//          self.collectionView.insertItems(at: [insertedIndexPath])
           self.newCollectionButton.isEnabled = true
           self.updateEditButtonState()
         }
@@ -174,7 +179,11 @@ class PhotoAlbumViewController: UIViewController {
     }
   }
   
-  
+  func updateEditButtonState() {
+    if let sections = fetchedResultsController.sections {
+      navigationItem.rightBarButtonItem?.isEnabled = sections[0].numberOfObjects > 0
+    }
+  }
   
   func addPhoto(with urlString: String) {
     let photo = Photo(context: dataController.viewContext)
@@ -182,61 +191,44 @@ class PhotoAlbumViewController: UIViewController {
     photo.pin = pin
     
     let url = URL(string: urlString)
-
+    
     if let data = try? Data(contentsOf: url!) {
       photo.imageData = data
     }
     
     try? dataController.viewContext.save()
-    self.photos.insert(photo, at: 0)
-    
   }
   
   func deletePhoto(at indexPath: IndexPath) {
-    //let photoToDelete = fetchedResultsController.object(at: indexPath)
-    let photoToDelete = photos[indexPath.item]
+    let photoToDelete = fetchedResultsController.object(at: indexPath)
     dataController.viewContext.delete(photoToDelete)
     try? dataController.viewContext.save()
-    
-    photos.remove(at: indexPath.item)
-    // delete photo from collectionview at the indexpath.
-    collectionView.deleteItems(at: [indexPath])
-    
-    if numberOfPhotos == 0 {
-      setEditing(false, animated: true)
-    }
-    updateEditButtonState()
   }
   
   
   func deleteAllPhotos() {
-    let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Photo")
-    let predicate = NSPredicate(format: "pin == %@", pin)
-    fetchRequest.predicate = predicate
-    let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-    do {
-      let batchDeleteResult = try dataController.viewContext.execute(batchDeleteRequest) as! NSBatchDeleteResult
-      print("The batch delete request has deleted \(batchDeleteResult.result!) records.")
-    } catch {
-      let updateError = error as NSError
-      print("\(updateError), \(updateError.userInfo)")
+    for object in self.fetchedResultsController.fetchedObjects! {
+      dataController.viewContext.delete(object)
     }
+    try? dataController.viewContext.save()
     
     setEditing(false, animated: true)
-    updateEditButtonState()
   }
   
-  func updateEditButtonState() {
-    navigationItem.rightBarButtonItem?.isEnabled = photos.count > 0
-  }
 }
 
 // MARK: CollectionView Data Source Methods
 
 extension PhotoAlbumViewController: UICollectionViewDataSource {
   
+  func numberOfSections(in collectionView: UICollectionView) -> Int {
+    return fetchedResultsController.sections?.count ?? 1
+  }
+  
+  
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return photos.count == 0 ? 30 : numberOfPhotos
+    //return photos.count == 0 ? 30 : numberOfPhotos
+    return  fetchedResultsController.sections?[section].numberOfObjects ?? 0
   }
   
   
@@ -253,18 +245,17 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    if photos.count < 30 {
+    if let numberOfPhotos = fetchedResultsController.fetchedObjects?.count, numberOfPhotos < 30 {
       cell.photoImageView.image = nil
       cell.toggleSpinner(true)
       cell.deleteView.isHidden = true
       return
     }
     
-    let photo = photos[indexPath.item]
-    
+    let aPhoto = fetchedResultsController.object(at: indexPath)
     
     performUIUpdatesOnMain {
-      cell.photo = photo
+      cell.photo = aPhoto
       cell.delegate = self
       if self.editingMode {
         cell.deleteView.isHidden = false
@@ -274,8 +265,6 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
       
     }
     
-    
-    
   }
   
 }
@@ -284,17 +273,10 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
 // MARK: CollectionView Delegate Methods
 
 extension PhotoAlbumViewController: UICollectionViewDelegate {
+  
+  
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    //collectionView.deselectItem(at: indexPath, animated: true)
     
-    //    collectionView.cellForItemAtIndexPath(indexPath)?.backgroundColor = UIColor.grayColor()
-    
-    //let selectedPhoto = photos[indexPath.row]
-    //if let cell = collectionView.cellForItem(at: indexPath) as? PhotoCollectionViewCell {
-    //cell.contentView.backgroundColor = UIColor.init(white: 1.0, alpha: 1 )
-    //cell.photoImageView.alpha = 0.5
-    //  photosToRemove.append(selectedPhoto)
-    //}
   }
   
   
@@ -338,17 +320,77 @@ extension PhotoAlbumViewController: UICollectionViewDelegateFlowLayout {
   
 }
 
+// Mark: - Photo Cell Delgates
+
 extension PhotoAlbumViewController: PhotoCellDelegate {
   
   func delete(cell: PhotoCollectionViewCell) {
     if let indexPath = collectionView.indexPath(for: cell) {
       // delete photo from datasource
-//      photos.remove(at: indexPath.item)
+      //      photos.remove(at: indexPath.item)
       // delete photo from collectionview at the indexpath.
-//      collectionView.deleteItems(at: [indexPath])
+      //      collectionView.deleteItems(at: [indexPath])
       deletePhoto(at: indexPath)
     }
   }
   
+}
+
+// MARK: - Fetch results controller delegate methods
+
+extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
   
+  func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+    insertedIndexPaths = [IndexPath]()
+    deletedIndexPaths = [IndexPath]()
+    updatedIndexPaths = [IndexPath]()
+  }
+  
+  func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+    
+    let numberOfStaticCells = 1
+    switch type {
+    case .insert:
+      let newIndexPathAdjusted = IndexPath(item: (newIndexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
+      insertedIndexPaths.append(newIndexPathAdjusted)
+    case .delete:
+      let indexPathAdjusted = IndexPath(item: (indexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
+      deletedIndexPaths.append(indexPathAdjusted)
+    case .update:
+      let indexPathAdjusted = IndexPath(item: (indexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
+      updatedIndexPaths.append(indexPathAdjusted)
+    case .move:
+      fallthrough
+    default:
+      break
+    }
+  }
+  
+  func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+    
+    self.collectionView.performBatchUpdates(
+      { () -> Void in
+        
+        for indexPath in self.insertedIndexPaths {
+          self.collectionView.insertItems(at: [indexPath])
+        }
+        
+        for indexPath in self.deletedIndexPaths {
+          self.collectionView.deleteItems(at: [indexPath])
+        }
+        
+        for indexPath in self.updatedIndexPaths {
+          self.collectionView.reloadItems(at: [indexPath])
+        }
+    },
+      completion: { (success) in
+        if !self.getPhotoDownloadStatus().completed {
+          self.downloadAnImage()
+        }
+    }
+    )
+    
+    let (state, remaining) = getPhotoDownloadStatus()
+    enableNewCollectionButton(state, remaining: remaining)
+  }
 }
