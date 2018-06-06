@@ -119,7 +119,7 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   func centerMapOnLocation(annotation: MKAnnotation) {
-    let coordinateRegion = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
+    let coordinateRegion = MKCoordinateRegion.init(center: annotation.coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
     mapView.setRegion(coordinateRegion, animated: true)
   }
   
