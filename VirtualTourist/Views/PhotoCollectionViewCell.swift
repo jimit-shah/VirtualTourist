@@ -34,12 +34,6 @@ class PhotoCollectionViewCell: UICollectionViewCell {
   
   weak var delegate: PhotoCellDelegate?
   
-//  var isEditing: Bool = false {
-//    didSet {
-//      deleteView.isHidden = !isEditing
-//    }
-//  }
-  
   func toggleSpinner(_ show: Bool) {
     if show {
       activityIndicator.startAnimating()
@@ -55,6 +49,10 @@ class PhotoCollectionViewCell: UICollectionViewCell {
     super.awakeFromNib()
     deleteView.layer.cornerRadius = deleteView.bounds.width / 2
     deleteView.layer.masksToBounds = true
+  }
+  
+  override func layoutIfNeeded() {
+    super.layoutIfNeeded()
   }
   
   @IBAction func deleteButtonTapped(_ sender: UIButton) {

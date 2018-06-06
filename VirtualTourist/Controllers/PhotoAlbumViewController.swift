@@ -75,7 +75,7 @@ class PhotoAlbumViewController: UIViewController {
     addSaveNotificationObserver()
     
     if photoFetchedResultsController.fetchedObjects?.count == 0 {
-    // get photos from flickr
+      // get photos from flickr
       getPhotos()
     } else {
       newCollectionButton.isEnabled = true
@@ -85,19 +85,21 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   
-    deinit {
-      removeSaveNotificationOberserver()
-    }
-
+  deinit {
+    removeSaveNotificationOberserver()
+  }
+  
   
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    //setupFetchedResultsController()
+    if photoFetchedResultsController == nil {
+      setupFetchedResultsController()
+    }
   }
   
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-    //photoFetchedResultsController = nil
+    photoFetchedResultsController = nil
   }
   
   // MARK: Helper Methods
@@ -188,12 +190,13 @@ class PhotoAlbumViewController: UIViewController {
         let pinID = self.pin.objectID
         
         var rowCount = 0
-        self.dataController?.backgroundContext.perform {
+        
+        backgroundContext.perform {
           
           let backgroundPin = backgroundContext.object(with: pinID) as! Pin
           
           for result in photoResults {
-        
+            
             let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
             //          self.addPhoto(with: imageURLString)
             
@@ -205,17 +208,12 @@ class PhotoAlbumViewController: UIViewController {
             if let data = try? Data(contentsOf: url!) {
               photo.imageData = data
             }
-          rowCount += 1
+            rowCount += 1
           }
           
           print("Photos fetched: \(rowCount)")
           
-          do {
-            try backgroundContext.save()
-          }
-          catch let error as NSError {
-            print("Error saving photos: \(error)")
-          }
+          try? backgroundContext.save()
           
         }
       }
@@ -231,26 +229,6 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   
-//  // MARK: add Photo
-//  func addPhoto(with urlString: String) {
-//    let url = URL(string: urlString)
-//
-////        let photo = LocationPhoto(context: self.dataController.viewContext)
-//    //    if let pin = try? self.dataController.viewContext.object(with: self.tappedPin.objectID) {
-//    //      photo.locationPin = pin as? LocationPin
-//    //    }
-//    //    photo.url_m = photoDict["url_m"] as? String
-//    //    photo.id = photoDict["id"] as? String
-//
-//    let photo = Photo(context: self.dataController.viewContext)
-//    photo.imageURLString = urlString
-//    photo.pin = dataController.viewContext.object(with: pin.objectID) as? Pin
-//    if let data = try? Data(contentsOf: url!) {
-//      photo.imageData = data
-//    }
-//    try? dataController.viewContext.save()
-//  }
-  
   // MARK: delete photo
   func deletePhoto(at indexPath: IndexPath) {
     let photoToDelete = photoFetchedResultsController.object(at: indexPath)
@@ -264,10 +242,7 @@ class PhotoAlbumViewController: UIViewController {
       dataController.viewContext.delete(object)
     }
     try? dataController.viewContext.save()
-    
     setEditing(false, animated: true)
-    
-    
   }
   
   
@@ -277,18 +252,6 @@ class PhotoAlbumViewController: UIViewController {
   //        let photo = try!
   //      }
   //    }
-  
-  //    CoreDataStackManager.sharedInstance.performAsyncBackgroundBatchOperation { (workerContext) in
-  //      for photo in self.fetchedResultsController.fetchedObjects! {
-  //        let photoInContext = try! workerContext.existingObject(with: photo.objectID) as! Photo
-  //        if photoInContext.imageData == nil {
-  //          let _ = photoInContext.getImageData()
-  //          break
-  //        }
-  //      }
-  //      self.saveContext()
-  //    }
-  //  }
   
 }
 
@@ -303,7 +266,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
     //return photos.count == 0 ? 30 : numberOfPhotos
-    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 0
+    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 30
     return  numberOfPhotos
   }
   
@@ -311,6 +274,12 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
+    
+    performUIUpdatesOnMain {
+      cell.photoImageView.image = nil
+      cell.toggleSpinner(true)
+      cell.deleteView.isHidden = true
+    }
     
     configurePhotoCell(cell, cellForItemAt: indexPath)
     
@@ -323,33 +292,31 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     
     //let indexPathAdjusted = IndexPath(item: (indexPath as NSIndexPath).item, section: 0)
     
-//    if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos < 30 {
-//      cell.photoImageView.image = nil
-//      cell.toggleSpinner(true)
-//      cell.deleteView.isHidden = true
-//      return
-//    }
-
-      cell.photoImageView.image = nil
-      cell.toggleSpinner(true)
-      cell.deleteView.isHidden = true
-
+    //    if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos < 30 {
+    //      cell.photoImageView.image = nil
+    //      cell.toggleSpinner(true)
+    //      cell.deleteView.isHidden = true
+    //      return
+    //    }
+    
     if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos > 0 {
-    
-    let aPhoto = photoFetchedResultsController.object(at: indexPath)
-    
-    performUIUpdatesOnMain {
-      cell.photo = aPhoto
-      cell.delegate = self
       
-      if self.editingMode {
-        cell.deleteView.isHidden = false
-      } else {
-        cell.deleteView.isHidden = true
+      guard numberOfPhotos >= indexPath.item else { return }
+      
+      let aPhoto = photoFetchedResultsController.object(at: indexPath)
+      
+      performUIUpdatesOnMain {
+        cell.photo = aPhoto
+        cell.delegate = self
+        
+        if self.editingMode {
+          cell.deleteView.isHidden = false
+        } else {
+          cell.deleteView.isHidden = true
+        }
+        
       }
       
-      }
-    
     }
   }
   
@@ -409,10 +376,6 @@ extension PhotoAlbumViewController: PhotoCellDelegate {
   
   func delete(cell: PhotoCollectionViewCell) {
     if let indexPath = collectionView.indexPath(for: cell) {
-      // delete photo from datasource
-      //      photos.remove(at: indexPath.item)
-      // delete photo from collectionview at the indexpath.
-      //      collectionView.deleteItems(at: [indexPath])
       deletePhoto(at: indexPath)
     }
   }
@@ -432,36 +395,6 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
   
   func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
     
-////    let numberOfStaticCells = 1
-//    switch type {
-//    case .insert:
-//      let newIndexPathAdjusted = IndexPath(item: (newIndexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
-//      insertedIndexPaths.append(newIndexPathAdjusted)
-//    case .delete:
-//      let indexPathAdjusted = IndexPath(item: (indexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
-//      deletedIndexPaths.append(indexPathAdjusted)
-//    case .update:
-//      let indexPathAdjusted = IndexPath(item: (indexPath! as NSIndexPath).item + numberOfStaticCells, section: 0)
-//      updatedIndexPaths.append(indexPathAdjusted)
-//    case .move:
-//      fallthrough
-//    default:
-//      break
-//    }
-    
-//    switch type {
-//    case .insert:
-//      collectionView.insertItems(at: [newIndexPath!])
-//      break
-//    case .delete:
-//      collectionView.deleteItems(at: [indexPath!])
-//      break
-//    case .update:
-//      collectionView.reloadItems(at: [indexPath!])
-//    case .move:
-//      collectionView.moveItem(at: indexPath!, to: newIndexPath!)
-//    }
-
     switch type {
     case .insert:
       self.insertedIndexPaths.append(newIndexPath!)
@@ -485,7 +418,6 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
       fatalError("Invalid change type in controller(_:didChange:atSectionIndex:for:). Only .insert or .delete should be possible.")
     }
   }
-
   
   
   func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
@@ -506,49 +438,27 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
       }
     }, completion: { success in
       
-        self.newCollectionButton.isEnabled = true
-        self.updateEditButtonState()
+      self.newCollectionButton.isEnabled = true
+      self.updateEditButtonState()
     })
     
-//    self.collectionView.performBatchUpdates(
-//      { () -> Void in
-//
-//        for indexPath in self.insertedIndexPaths {
-//          self.collectionView.insertItems(at: [indexPath])
-//        }
-//
-//        for indexPath in self.deletedIndexPaths {
-//          self.collectionView.deleteItems(at: [indexPath])
-//        }
-//
-//        for indexPath in self.updatedIndexPaths {
-//          self.collectionView.reloadItems(at: [indexPath])
-//        }
-//    },
-//      completion: { (success) in
-//        //        if !self.getPhotoDownloadStatus {
-//        //          //self.downloadAnImage()
-//        //        }
-//    }
-//    )
-//
-//    self.newCollectionButton.isEnabled = getPhotoDownloadStatus()
-//  }
+  }
 }
-}
-//
+
+// MARK: - Save Notification Observer Methods
+
 extension PhotoAlbumViewController {
   func addSaveNotificationObserver() {
     removeSaveNotificationOberserver()
     saveObserverToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange , object: dataController.viewContext, queue: nil, using: handleSaveNotification(notification:))
   }
-
+  
   func removeSaveNotificationOberserver() {
     if let token = saveObserverToken{
       NotificationCenter.default.removeObserver(token)
     }
   }
-
+  
   func handleSaveNotification(notification: Notification) {
     performUIUpdatesOnMain {
       try? self.dataController.viewContext.save()
