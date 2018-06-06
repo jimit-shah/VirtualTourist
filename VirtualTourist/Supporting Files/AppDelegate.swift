@@ -20,7 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     static let MapViewRegion = "mapViewRegion"
   }
 
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+
     checkIfFirstLaunch()
     
     // load data from coreData
@@ -72,7 +73,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       let radius = 5000000.0
       
       let coordinate = CLLocationCoordinate2DMake(lat, lon)
-      let region = MKCoordinateRegion.init(center: coordinate, latitudinalMeters: radius, longitudinalMeters: radius)
+      let region = MKCoordinateRegionMakeWithDistance(coordinate, radius, radius)
       
       // Set default to show entire US
       UserDefaults.standard.set([

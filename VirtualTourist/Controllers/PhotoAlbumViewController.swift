@@ -39,6 +39,11 @@ class PhotoAlbumViewController: UIViewController {
   var updatedIndexPaths: [IndexPath]!
   
   var saveObserverToken: Any?
+  var downloadingPhotos: Bool = false {
+    didSet {
+      newCollectionButton.isEnabled = !downloadingPhotos
+    }
+  }
   
   // MARK: Outlets
   
@@ -51,7 +56,7 @@ class PhotoAlbumViewController: UIViewController {
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
     deleteAllPhotos()
-    collectionView.reloadData()
+    //collectionView.reloadData()
     getPhotos()
   }
   
@@ -123,15 +128,14 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   func centerMapOnLocation(annotation: MKAnnotation) {
-    let coordinateRegion = MKCoordinateRegion.init(center: annotation.coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
-    mapView.setRegion(coordinateRegion, animated: true)
+    let _ = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
   }
   
   func generateRandomNumber(_ upper: Int, _ lower: Int = 0) -> Int {
     return Int(arc4random_uniform(UInt32(upper - lower + 1))) + lower
   }
   
-  //  func getPhotoDownloadStatus() -> (completed: Bool, remaining: Int) {
+  
   func getPhotoDownloadStatus() -> (Bool) {
     var numberOfPendingPhotos = 0
     
@@ -141,14 +145,14 @@ class PhotoAlbumViewController: UIViewController {
       }
     }
     return numberOfPendingPhotos == 0
-    //return (numberOfPendingPhotos == 0, numberOfPendingPhotos)
+    
   }
   
   // MARK: Get Photos Method
   
   func getPhotos() {
-    
-    newCollectionButton.isEnabled = false
+    downloadingPhotos = true
+    //newCollectionButton.isEnabled = false
     
     var lat: Double!
     var lon: Double!
@@ -209,11 +213,16 @@ class PhotoAlbumViewController: UIViewController {
               photo.imageData = data
             }
             rowCount += 1
+            
           }
           
           print("Photos fetched: \(rowCount)")
           
           try? backgroundContext.save()
+          
+          performUIUpdatesOnMain {
+            self.downloadingPhotos = false
+          }
           
         }
       }
@@ -438,7 +447,6 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
       }
     }, completion: { success in
       
-      self.newCollectionButton.isEnabled = true
       self.updateEditButtonState()
     })
     

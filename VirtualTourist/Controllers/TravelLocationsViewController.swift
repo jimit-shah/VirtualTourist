@@ -119,9 +119,10 @@ class TravelLocationsViewController: UIViewController {
   }
   
   let regionRadius: CLLocationDistance = 1000
+
+  
   func centerMapOnLocation(location: CLLocation) {
-    let coordinateRegion = MKCoordinateRegion.init(center: location.coordinate, latitudinalMeters: regionRadius, longitudinalMeters: regionRadius)
-    mapView.setRegion(coordinateRegion, animated: true)
+    let _ = MKCoordinateRegionMakeWithDistance(location.coordinate, regionRadius, regionRadius)
   }
   
   func saveMapViewRegion(_ region: MKCoordinateRegion) {
