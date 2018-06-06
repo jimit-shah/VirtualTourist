@@ -38,7 +38,7 @@ class PhotoAlbumViewController: UIViewController {
   var deletedIndexPaths: [IndexPath]!
   var updatedIndexPaths: [IndexPath]!
   
-  //var saveObserverToken: Any?
+  var saveObserverToken: Any?
   
   // MARK: Outlets
   
@@ -72,6 +72,8 @@ class PhotoAlbumViewController: UIViewController {
     setupFetchedResultsController()
     //updateEditButtonState()
     
+    addSaveNotificationObserver()
+    
     if photoFetchedResultsController.fetchedObjects?.count == 0 {
     // get photos from flickr
       getPhotos()
@@ -80,22 +82,22 @@ class PhotoAlbumViewController: UIViewController {
       updateEditButtonState()
     }
     
-    //addSaveNotificationObserver()
   }
   
   
-  //  deinit {
-  //    removeSaveNotificationOberserver()
-  //  }
+    deinit {
+      removeSaveNotificationOberserver()
+    }
+
   
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    setupFetchedResultsController()
+    //setupFetchedResultsController()
   }
   
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-    photoFetchedResultsController = nil
+    //photoFetchedResultsController = nil
   }
   
   // MARK: Helper Methods
@@ -185,6 +187,7 @@ class PhotoAlbumViewController: UIViewController {
         let backgroundContext: NSManagedObjectContext! = self.dataController.backgroundContext
         let pinID = self.pin.objectID
         
+        var rowCount = 0
         self.dataController?.backgroundContext.perform {
           
           let backgroundPin = backgroundContext.object(with: pinID) as! Pin
@@ -202,9 +205,18 @@ class PhotoAlbumViewController: UIViewController {
             if let data = try? Data(contentsOf: url!) {
               photo.imageData = data
             }
-            
+          rowCount += 1
           }
-          try? backgroundContext.save()
+          
+          print("Photos fetched: \(rowCount)")
+          
+          do {
+            try backgroundContext.save()
+          }
+          catch let error as NSError {
+            print("Error saving photos: \(error)")
+          }
+          
         }
       }
       
@@ -523,24 +535,24 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
 //    self.newCollectionButton.isEnabled = getPhotoDownloadStatus()
 //  }
 }
+}
+//
+extension PhotoAlbumViewController {
+  func addSaveNotificationObserver() {
+    removeSaveNotificationOberserver()
+    saveObserverToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange , object: dataController.viewContext, queue: nil, using: handleSaveNotification(notification:))
+  }
 
-//
-//extension PhotoAlbumViewController {
-//  func addSaveNotificationObserver() {
-//    removeSaveNotificationOberserver()
-//    saveObserverToken = NotificationCenter.default.addObserver(forName: .NSManagedObjectContextObjectsDidChange , object: dataController.viewContext, queue: nil, using: handleSaveNotification(notification:))
-//  }
-//
-//  func removeSaveNotificationOberserver() {
-//    if let token = saveObserverToken{
-//      NotificationCenter.default.removeObserver(token)
-//    }
-//  }
-//
-//  func handleSaveNotification(notification: Notification) {
-//    performUIUpdatesOnMain {
-//      try? self.dataController.viewContext.save()
-//    }
-//  }
+  func removeSaveNotificationOberserver() {
+    if let token = saveObserverToken{
+      NotificationCenter.default.removeObserver(token)
+    }
+  }
+
+  func handleSaveNotification(notification: Notification) {
+    performUIUpdatesOnMain {
+      try? self.dataController.viewContext.save()
+    }
+  }
 }
 
