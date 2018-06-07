@@ -20,14 +20,14 @@ class PhotoCollectionViewCell: UICollectionViewCell {
   
   @IBOutlet weak var deleteView: UIVisualEffectView!
   
-  var photo: Photo? {
+  var photoImage: UIImage? {
     didSet {
-      if let photo = photo {
-      photoImageView.image = UIImage(data: photo.imageData!)
-      photoImageView.contentMode = .scaleAspectFill
-      photoImageView.clipsToBounds = true
-      photoImageView.layer.cornerRadius = 2
-      toggleSpinner(false)
+      if let image = photoImage {
+        photoImageView.image = image
+        photoImageView.contentMode = .scaleAspectFill
+        photoImageView.clipsToBounds = true
+        photoImageView.layer.cornerRadius = 2
+        toggleSpinner(false)
       }
     }
   }

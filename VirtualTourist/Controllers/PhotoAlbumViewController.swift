@@ -202,21 +202,15 @@ class PhotoAlbumViewController: UIViewController {
           for result in photoResults {
             
             let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
-            //          self.addPhoto(with: imageURLString)
-            
-            let url = URL(string: imageURLString)
-            
+        
             let photo = Photo(context: backgroundContext)
             photo.imageURLString = imageURLString
             photo.pin = backgroundPin
-            if let data = try? Data(contentsOf: url!) {
-              photo.imageData = data
-            }
-            rowCount += 1
             
+            rowCount += 1
           }
           
-          print("Photos fetched: \(rowCount)")
+          print("Photos url downloaded: \(rowCount)")
           
           try? backgroundContext.save()
           
@@ -254,14 +248,6 @@ class PhotoAlbumViewController: UIViewController {
     setEditing(false, animated: true)
   }
   
-  
-  //  func downloadAnImage() {
-  //    dataController.viewContext.perform {
-  //      for photo in self.fetchedResultsController.fetchedObjects {
-  //        let photo = try!
-  //      }
-  //    }
-  
 }
 
 // MARK: CollectionView Data Source Methods
@@ -275,7 +261,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
     //return photos.count == 0 ? 30 : numberOfPhotos
-    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 30
+    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 0
     return  numberOfPhotos
   }
   
@@ -299,47 +285,55 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    //let indexPathAdjusted = IndexPath(item: (indexPath as NSIndexPath).item, section: 0)
-    
-    //    if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos < 30 {
-    //      cell.photoImageView.image = nil
-    //      cell.toggleSpinner(true)
-    //      cell.deleteView.isHidden = true
-    //      return
-    //    }
-    
     if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos > 0 {
-      
-      guard numberOfPhotos >= indexPath.item else { return }
       
       let aPhoto = photoFetchedResultsController.object(at: indexPath)
       
-      performUIUpdatesOnMain {
-        cell.photo = aPhoto
-        cell.delegate = self
+      if (aPhoto.imageData == nil) {
+        //let backgroundContext: NSManagedObjectContext! = self.dataController.backgroundContext
+        //let photoID = aPhoto.objectID
         
-        if self.editingMode {
-          cell.deleteView.isHidden = false
-        } else {
-          cell.deleteView.isHidden = true
+        
+        FlickrClient.sharedInstance().downloadImage(imagePath: aPhoto.imageURLString!) { (data, errorString) in
+          guard (errorString == nil) else {
+            print("Error downloading image: \(errorString!)")
+            return
+          }
+          
+          aPhoto.imageData = data!
+          try? self.dataController.viewContext.save()
+          
+          performUIUpdatesOnMain {
+            self.updatePhotoCell(cell, with: data!)
+          }
         }
-        
-      }
+      } else {
       
+      performUIUpdatesOnMain {
+        self.updatePhotoCell(cell, with: aPhoto.imageData!)
+      }
+    }
+    }
+}
+  
+  // update photo cell
+  fileprivate func updatePhotoCell(_ cell: PhotoCollectionViewCell, with dataImage: Data) {
+    cell.photoImage = UIImage(data: dataImage)
+    cell.delegate = self
+    
+    if self.editingMode {
+      cell.deleteView.isHidden = false
+    } else {
+      cell.deleteView.isHidden = true
     }
   }
-  
+
+
 }
 
 // MARK: CollectionView Delegate Methods
 
 extension PhotoAlbumViewController: UICollectionViewDelegate {
-  
-  
-  func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-    
-  }
-  
   
   // MARK: Delete Items
   
