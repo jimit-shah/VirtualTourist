@@ -42,7 +42,7 @@ extension FlickrClient {
   
   func searchByLocation(latitude lat: Double, longitude lon: Double, page: Int = 1, completion: @escaping (_ results: [String: AnyObject]?, _ error: NSError?) -> Void) -> URLSessionDataTask {
   
-    let parametersWithKeys: [String: Any] = createParameters(latitude: lat, longitude: lon, page: 1)
+    let parametersWithKeys: [String: Any] = createParameters(latitude: lat, longitude: lon, page: page)
     
     let task = taskForGETMethod("/", parameters: parametersWithKeys) { (results, error) in
       

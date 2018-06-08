@@ -15,6 +15,8 @@ class PhotoAlbumViewController: UIViewController {
   
   // MARK: Properties
   
+  // Constants
+  
   let inset: CGFloat = 4.0
   let spacing: CGFloat = 2.0
   let lineSpacing: CGFloat = 4.0
@@ -25,11 +27,13 @@ class PhotoAlbumViewController: UIViewController {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
     }
   }
+  
+  // Variables
+  
   var pin: Pin!
   var dataController: DataController!
   var photosToRemove = [Photo]()
   var editingMode: Bool = false
-  
   var photoFetchedResultsController: NSFetchedResultsController<Photo>!
   
   // Keep track of insertion, deletion, and update paths.
@@ -55,7 +59,11 @@ class PhotoAlbumViewController: UIViewController {
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
     deleteAllPhotos()
-    getPhotos()
+    
+    let pinID = self.pin.objectID
+    let pin = self.dataController.viewContext.object(with: pinID) as! Pin
+    let page = Int(pin.pageNumber) + 1
+    getPhotos(from: page)
   }
   
   // MARK: Lifecycle
@@ -122,6 +130,7 @@ class PhotoAlbumViewController: UIViewController {
     print("fetched objects: \(photoFetchedResultsController.fetchedObjects!.count)")
   }
   
+  // Center Map on Location
   func centerMapOnLocation(annotation: MKAnnotation) {
     let region = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
     mapView.setRegion(region, animated: true)
@@ -135,16 +144,12 @@ class PhotoAlbumViewController: UIViewController {
   
   // MARK: Get Photos Method
   
-  func getPhotos() {
+  func getPhotos(from pageNumber: Int = 1) {
     
     downloadingPhotos = true
     
-    var lat: Double!
-    var lon: Double!
-    
-    lat = selectedAnnotation?.coordinate.latitude
-    lon = selectedAnnotation?.coordinate.longitude
-    
+    let lat: Double = selectedAnnotation!.coordinate.latitude
+    let lon: Double = selectedAnnotation!.coordinate.longitude
     
     let _ = FlickrClient.sharedInstance().searchByLocation(latitude: lat, longitude: lon) { (results, error) in
       
@@ -155,15 +160,10 @@ class PhotoAlbumViewController: UIViewController {
       
       let data = results![FlickrClient.JSONResponseKeys.Photos] as! [String: AnyObject]
       let potentialPages = data[FlickrClient.Photos.Pages] as! Int
-      
-      // Flickr returns at most 4000 images, determine adjusted maximum number of pages.
-      let maxPages = FlickrClient.Config.MaxPhotosReturned / FlickrClient.Config.PerPage
-      let pages = min(potentialPages, maxPages)
-      
-      //let randomPage = random(pages, start:1)
-      let randomPage = self.generateRandomNumber(pages, 1)
-      
-      let _ = FlickrClient.sharedInstance().searchByLocation(latitude: lat, longitude: lon, page: randomPage) { (results, error) in
+      print("Potential pages ---- \(potentialPages)")
+      let fetchPage = (pageNumber <= potentialPages) ? pageNumber : 1
+      print("Page -------------- \(fetchPage)")
+      let _ = FlickrClient.sharedInstance().searchByLocation(latitude: lat, longitude: lon, page: fetchPage) { (results, error) in
         
         guard (error == nil) else {
           print("Error: \(error!)")
@@ -191,10 +191,12 @@ class PhotoAlbumViewController: UIViewController {
             let photo = Photo(context: backgroundContext)
             photo.imageURLString = imageURLString
             photo.pin = backgroundPin
+            backgroundPin.pageNumber = Int16(fetchPage)
             
             rowCount += 1
           }
           
+          print("photos fetching from page number: \(backgroundPin.pageNumber)")
           print("Photos url downloaded: \(rowCount)")
           
           try? backgroundContext.save()
@@ -230,6 +232,7 @@ class PhotoAlbumViewController: UIViewController {
       dataController.viewContext.delete(object)
     }
     try? dataController.viewContext.save()
+    collectionView.reloadData()
     setEditing(false, animated: true)
   }
   
@@ -245,9 +248,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    //return photos.count == 0 ? 30 : numberOfPhotos
-    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 30
-    return  numberOfPhotos
+    return  photoFetchedResultsController.sections?[section].numberOfObjects ?? 0
   }
   
   
@@ -281,7 +282,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
         
         let backgroundPhoto = backgroundContext.object(with: photoID) as! Photo
         
-        FlickrClient.sharedInstance().downloadImage(imagePath: aPhoto.imageURLString!) { (data, errorString) in
+        FlickrClient.sharedInstance().downloadImage(imagePath: aPhoto.imageURLString!) { data, errorString in
           guard (errorString == nil) else {
             print("Error downloading image: \(errorString!)")
             return
@@ -291,7 +292,6 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
           performUIUpdatesOnMain {
             self.updatePhotoCell(cell, with: data!)
           }
-          
         }
         try? backgroundContext.save()
       }
@@ -330,7 +330,6 @@ extension PhotoAlbumViewController: UICollectionViewDelegate {
     editingMode = editing
     collectionView.reloadData()
   }
-  
 }
 
 
