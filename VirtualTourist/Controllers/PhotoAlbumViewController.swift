@@ -19,7 +19,7 @@ class PhotoAlbumViewController: UIViewController {
   let spacing: CGFloat = 2.0
   let lineSpacing: CGFloat = 4.0
   
-  let regionRadius: CLLocationDistance = 50000
+  let regionRadius: CLLocationDistance = 5000
   var selectedAnnotation: MKAnnotation? {
     didSet {
       print("selectedAnnotation: \(selectedAnnotation!.coordinate)")
@@ -29,14 +29,13 @@ class PhotoAlbumViewController: UIViewController {
   var dataController: DataController!
   var photosToRemove = [Photo]()
   var editingMode: Bool = false
-  var photo: Photo!
   
   var photoFetchedResultsController: NSFetchedResultsController<Photo>!
   
-  // Keep the changes. We will keep track of insertions, deletions, and updates.
-  var insertedIndexPaths: [IndexPath]!
-  var deletedIndexPaths: [IndexPath]!
-  var updatedIndexPaths: [IndexPath]!
+  // Keep track of insertion, deletion, and update paths.
+  var insertedIndexPaths = [IndexPath]()
+  var deletedIndexPaths = [IndexPath]()
+  var updatedIndexPaths = [IndexPath]()
   
   var saveObserverToken: Any?
   var downloadingPhotos: Bool = false {
@@ -56,7 +55,6 @@ class PhotoAlbumViewController: UIViewController {
   
   @IBAction func getNewCollection(_ sender: UIBarButtonItem) {
     deleteAllPhotos()
-    //collectionView.reloadData()
     getPhotos()
   }
   
@@ -70,12 +68,11 @@ class PhotoAlbumViewController: UIViewController {
     navigationItem.rightBarButtonItem = editButtonItem
     
     // load annotation on map and set region
-    mapView.addAnnotation(selectedAnnotation!)
     centerMapOnLocation(annotation: selectedAnnotation!)
     
     // load data using fetch request
     setupFetchedResultsController()
-    //updateEditButtonState()
+    updateEditButtonState()
     
     addSaveNotificationObserver()
     
@@ -89,11 +86,9 @@ class PhotoAlbumViewController: UIViewController {
     
   }
   
-  
   deinit {
     removeSaveNotificationOberserver()
   }
-  
   
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
@@ -128,7 +123,9 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   func centerMapOnLocation(annotation: MKAnnotation) {
-    let _ = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
+    let region = MKCoordinateRegionMakeWithDistance(annotation.coordinate, regionRadius, regionRadius)
+    mapView.setRegion(region, animated: true)
+    mapView.addAnnotation(annotation)
   }
   
   func generateRandomNumber(_ upper: Int, _ lower: Int = 0) -> Int {
@@ -136,23 +133,11 @@ class PhotoAlbumViewController: UIViewController {
   }
   
   
-  func getPhotoDownloadStatus() -> (Bool) {
-    var numberOfPendingPhotos = 0
-    
-    for photo in self.photoFetchedResultsController.fetchedObjects!{
-      if photo.imageData == nil {
-        numberOfPendingPhotos += 1
-      }
-    }
-    return numberOfPendingPhotos == 0
-    
-  }
-  
   // MARK: Get Photos Method
   
   func getPhotos() {
+    
     downloadingPhotos = true
-    //newCollectionButton.isEnabled = false
     
     var lat: Double!
     var lon: Double!
@@ -202,7 +187,7 @@ class PhotoAlbumViewController: UIViewController {
           for result in photoResults {
             
             let imageURLString = result[FlickrClient.Photo.MediumURL] as! String
-        
+            
             let photo = Photo(context: backgroundContext)
             photo.imageURLString = imageURLString
             photo.pin = backgroundPin
@@ -261,7 +246,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
     //return photos.count == 0 ? 30 : numberOfPhotos
-    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 0
+    let numberOfPhotos = photoFetchedResultsController.sections?[section].numberOfObjects ?? 30
     return  numberOfPhotos
   }
   
@@ -270,11 +255,9 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
     
-    performUIUpdatesOnMain {
-      cell.photoImageView.image = nil
-      cell.toggleSpinner(true)
-      cell.deleteView.isHidden = true
-    }
+    cell.photoImageView.image = nil
+    cell.toggleSpinner(true)
+    cell.deleteView.isHidden = true
     
     configurePhotoCell(cell, cellForItemAt: indexPath)
     
@@ -285,36 +268,41 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
   
   func configurePhotoCell(_ cell: PhotoCollectionViewCell, cellForItemAt indexPath: IndexPath) {
     
-    if let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos > 0 {
+    
+    guard let numberOfPhotos = photoFetchedResultsController.fetchedObjects?.count, numberOfPhotos > 0 else { return }
+    
+    let aPhoto = photoFetchedResultsController.object(at: indexPath)
+    
+    if (aPhoto.imageData == nil) {
+      let backgroundContext: NSManagedObjectContext! = self.dataController.backgroundContext
+      let photoID = aPhoto.objectID
       
-      let aPhoto = photoFetchedResultsController.object(at: indexPath)
-      
-      if (aPhoto.imageData == nil) {
-        //let backgroundContext: NSManagedObjectContext! = self.dataController.backgroundContext
-        //let photoID = aPhoto.objectID
+      backgroundContext.perform {
         
+        let backgroundPhoto = backgroundContext.object(with: photoID) as! Photo
         
         FlickrClient.sharedInstance().downloadImage(imagePath: aPhoto.imageURLString!) { (data, errorString) in
           guard (errorString == nil) else {
             print("Error downloading image: \(errorString!)")
             return
           }
-          
-          aPhoto.imageData = data!
-          try? self.dataController.viewContext.save()
+          backgroundPhoto.imageData = data!
           
           performUIUpdatesOnMain {
             self.updatePhotoCell(cell, with: data!)
           }
+          
         }
-      } else {
+        try? backgroundContext.save()
+      }
       
+    } else {
       performUIUpdatesOnMain {
         self.updatePhotoCell(cell, with: aPhoto.imageData!)
       }
     }
-    }
-}
+    
+  }
   
   // update photo cell
   fileprivate func updatePhotoCell(_ cell: PhotoCollectionViewCell, with dataImage: Data) {
@@ -327,8 +315,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
       cell.deleteView.isHidden = true
     }
   }
-
-
+  
 }
 
 // MARK: CollectionView Delegate Methods
@@ -393,7 +380,6 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     insertedIndexPaths = [IndexPath]()
     deletedIndexPaths = [IndexPath]()
     updatedIndexPaths = [IndexPath]()
-    
   }
   
   func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
@@ -405,6 +391,8 @@ extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     case .delete:
       self.deletedIndexPaths.append(indexPath!)
       break
+    case .update:
+      self.updatedIndexPaths.append(newIndexPath!)
     default:
       break
     }
@@ -462,9 +450,7 @@ extension PhotoAlbumViewController {
   }
   
   func handleSaveNotification(notification: Notification) {
-    performUIUpdatesOnMain {
-      try? self.dataController.viewContext.save()
-    }
+    try? self.dataController.viewContext.save()
   }
 }
 
