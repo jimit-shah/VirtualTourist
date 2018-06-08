@@ -12,7 +12,7 @@ extension FlickrClient {
   
   // MARK: - Convenience Methods
   
-  func searchByLocation(latitude lat: Double, longitude lon: Double, page: Int = 1, completion: @escaping (_ results: [String: AnyObject]?, _ error: NSError?) -> Void) -> URLSessionDataTask {
+  func createParameters(latitude lat: Double, longitude lon: Double, page: Int) -> [String:Any] {
     
     // Define BBox parameter value.
     let minLon = max(lon - Config.SearchBBoxHalfWidth, Config.SearchLonRange.0)
@@ -21,24 +21,30 @@ extension FlickrClient {
     let maxLat = min(lat + Config.SearchBBoxHalfHeight, Config.SearchLatRange.1)
     let boundingBoxString = "\(minLon),\(minLat),\(maxLon),\(maxLat)"
     
-    var parametersWithKeys = [String:Any]()
-  
-    let parameters: [String: Any] = [
-      ParameterKeys.APIKey: Constants.ApiKey,
-      ParameterKeys.BoundingBox: boundingBoxString,
-      ParameterKeys.Extras: ParameterValues.MediumURL,
-      ParameterKeys.Format: ParameterValues.ResponseFormat,
-      ParameterKeys.HasGeo: ParameterValues.IsGeoTagged,
-      ParameterKeys.Method: Methods.PhotoSearch,
-      ParameterKeys.NoJSONCallback: ParameterValues.DisableJSONCallback,
-      ParameterKeys.SafeSearch: ParameterValues.UseSafeSearch,
-      ParameterKeys.PerPage: ParameterValues.PerPage,
-      ParameterKeys.Page: page,
-      ParameterKeys.Radius: Config.SearchRadius,
-      ParameterKeys.GeoContext: ParameterValues.GeoContext
+    let parametersWithKeys: [String:Any] = [
+    ParameterKeys.APIKey: Constants.ApiKey,
+    ParameterKeys.BoundingBox: boundingBoxString,
+    ParameterKeys.Extras: ParameterValues.MediumURL,
+    ParameterKeys.Format: ParameterValues.ResponseFormat,
+    ParameterKeys.HasGeo: ParameterValues.IsGeoTagged,
+    ParameterKeys.Method: Methods.PhotoSearch,
+    ParameterKeys.NoJSONCallback: ParameterValues.DisableJSONCallback,
+    ParameterKeys.SafeSearch: ParameterValues.UseSafeSearch,
+    ParameterKeys.PerPage: ParameterValues.PerPage,
+    ParameterKeys.Page: page,
+    ParameterKeys.Radius: Config.SearchRadius,
+    ParameterKeys.GeoContext: ParameterValues.GeoContext
     ]
     
-    let task = taskForGETMethod("/", parameters: parameters) { (results, error) in
+    return parametersWithKeys
+  }
+  
+  
+  func searchByLocation(latitude lat: Double, longitude lon: Double, page: Int = 1, completion: @escaping (_ results: [String: AnyObject]?, _ error: NSError?) -> Void) -> URLSessionDataTask {
+  
+    let parametersWithKeys: [String: Any] = createParameters(latitude: lat, longitude: lon, page: 1)
+    
+    let task = taskForGETMethod("/", parameters: parametersWithKeys) { (results, error) in
       
       // Custom error function
       func sendError(_ code: Int, errorString: String) {
