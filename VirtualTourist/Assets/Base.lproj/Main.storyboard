@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14269.12" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ecA-Nj-Adf">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ecA-Nj-Adf">
     <device id="retina5_9" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14252.5"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -113,7 +114,7 @@
                                 <color key="backgroundColor" white="0.79994991090000001" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </mapView>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="uTn-Ki-ric">
-                                <rect key="frame" x="0.0" y="247" width="375" height="521"/>
+                                <rect key="frame" x="0.0" y="247" width="375" height="482"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="YR5-UG-ZOF">
                                     <size key="itemSize" width="100" height="100"/>
@@ -138,13 +139,13 @@
                                                         </userDefinedRuntimeAttribute>
                                                     </userDefinedRuntimeAttributes>
                                                 </view>
-                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
-                                                    <rect key="frame" x="36.666666666666664" y="36.666666666666664" width="36.999999999999993" height="36.999999999999993"/>
-                                                </activityIndicatorView>
                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Sbk-Rb-5cm">
                                                     <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
                                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </imageView>
+                                                <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="zj4-qb-edX">
+                                                    <rect key="frame" x="0.0" y="0.0" width="110" height="110"/>
+                                                </activityIndicatorView>
                                                 <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Xv3-qK-xpG">
                                                     <rect key="frame" x="8" y="8" width="30" height="30"/>
                                                     <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="NYM-rQ-cf7">
@@ -177,16 +178,18 @@
                                             </subviews>
                                         </view>
                                         <constraints>
-                                            <constraint firstItem="zj4-qb-edX" firstAttribute="centerY" secondItem="wOR-Me-KxC" secondAttribute="centerY" id="FIa-m8-typ"/>
+                                            <constraint firstAttribute="bottom" secondItem="zj4-qb-edX" secondAttribute="bottom" id="5gP-Rp-Zv4"/>
                                             <constraint firstAttribute="trailing" secondItem="9Bi-iG-8j0" secondAttribute="trailing" id="IAJ-gD-s7o"/>
                                             <constraint firstItem="Sbk-Rb-5cm" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="TvK-0o-mJU"/>
-                                            <constraint firstItem="zj4-qb-edX" firstAttribute="centerX" secondItem="wOR-Me-KxC" secondAttribute="centerX" id="bSc-6h-DMa"/>
                                             <constraint firstAttribute="bottom" secondItem="Sbk-Rb-5cm" secondAttribute="bottom" id="bhA-gM-Xk6"/>
                                             <constraint firstItem="9Bi-iG-8j0" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="cSy-84-yWh"/>
                                             <constraint firstItem="Sbk-Rb-5cm" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="cyO-DZ-Jks"/>
+                                            <constraint firstItem="zj4-qb-edX" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="haH-Hx-0fg"/>
                                             <constraint firstAttribute="trailing" secondItem="Sbk-Rb-5cm" secondAttribute="trailing" id="l6P-Ye-dls"/>
                                             <constraint firstItem="9Bi-iG-8j0" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" id="nGe-Uh-AD6"/>
                                             <constraint firstItem="Xv3-qK-xpG" firstAttribute="top" secondItem="wOR-Me-KxC" secondAttribute="top" constant="8" id="pGK-dS-fRk"/>
+                                            <constraint firstAttribute="trailing" secondItem="zj4-qb-edX" secondAttribute="trailing" id="vus-Ea-hhX"/>
+                                            <constraint firstItem="zj4-qb-edX" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" id="w3n-LV-03J"/>
                                             <constraint firstItem="Xv3-qK-xpG" firstAttribute="leading" secondItem="wOR-Me-KxC" secondAttribute="leading" constant="8" id="xKR-Vr-7uH"/>
                                             <constraint firstAttribute="bottom" secondItem="9Bi-iG-8j0" secondAttribute="bottom" id="zNB-wh-pJF"/>
                                         </constraints>
@@ -200,7 +203,7 @@
                                 </cells>
                             </collectionView>
                             <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I2X-KP-gce">
-                                <rect key="frame" x="0.0" y="768" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="729" width="375" height="49"/>
                                 <items>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="tJa-cf-VSH"/>
                                     <barButtonItem title="New Collection" id="dfH-Qf-HU2">

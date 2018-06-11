@@ -202,6 +202,7 @@ class PhotoAlbumViewController: UIViewController {
           try? backgroundContext.save()
           
           performUIUpdatesOnMain {
+            self.collectionView.reloadData()
             self.downloadingPhotos = false
           }
           
@@ -256,7 +257,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCollectionViewCell
     
-    cell.photoImageView.image = nil
+    cell.photoImage = #imageLiteral(resourceName: "placeholder4")
     cell.toggleSpinner(true)
     cell.deleteView.isHidden = true
     
